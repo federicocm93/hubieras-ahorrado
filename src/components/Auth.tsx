@@ -9,12 +9,10 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
-  const [message, setMessage] = useState('')
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setMessage('')
 
     try {
       if (isSignUp) {
@@ -31,8 +29,8 @@ export default function Auth() {
         })
         if (error) throw error
       }
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error desconocido')
     } finally {
       setLoading(false)
     }

@@ -88,8 +88,8 @@ export default function ExpenseChart({ expenses }: ExpenseChartProps) {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function(value: any) {
-            return '$' + value.toFixed(0)
+          callback: function(value: string | number) {
+            return '$' + Number(value).toFixed(0)
           }
         }
       },

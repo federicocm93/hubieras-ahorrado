@@ -146,7 +146,7 @@ export type Database = {
           title: string
           message: string
           read: boolean
-          data?: any
+          data?: Record<string, unknown>
           created_at: string
         }
         Insert: {
@@ -156,7 +156,7 @@ export type Database = {
           title: string
           message: string
           read?: boolean
-          data?: any
+          data?: Record<string, unknown>
           created_at?: string
         }
         Update: {
@@ -166,7 +166,7 @@ export type Database = {
           title?: string
           message?: string
           read?: boolean
-          data?: any
+          data?: Record<string, unknown>
           created_at?: string
         }
       }
