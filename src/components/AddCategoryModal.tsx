@@ -33,18 +33,18 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
       
       if (error) throw error
       onSuccess()
-    } catch (error: any) {
-      console.error('Error creating category:', error.message)
-      toast.error('Error al crear la categoría: ' + error.message)
+    } catch (error) {
+      console.error('Error creating category:', error)
+      toast.error('Error al crear la categoría: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full text-gray-900">
-        <div className="flex items-center justify-between p-6 border-b">
+    <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full text-gray-900 shadow-lg">
+        <div className="flex items-center justify-between p-3">
           <h2 className="text-lg font-semibold text-gray-900">
             Agregar Nueva Categoría
           </h2>
@@ -56,11 +56,8 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-3 space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Nombre de la Categoría
-            </label>
             <input
               type="text"
               id="name"

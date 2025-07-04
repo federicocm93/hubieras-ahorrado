@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import CustomSelect from '@/components/ui/CustomSelect'
 
 interface Category {
   id: string
@@ -17,6 +18,14 @@ interface Expense {
   description: string
   date: string
   category_id: string
+  group_id?: string
+  paid_by?: string
+}
+
+interface GroupMember {
+  id: string
+  user_id: string
+  user_email?: string
 }
 
 interface AddExpenseModalProps {
@@ -24,14 +33,19 @@ interface AddExpenseModalProps {
   expense?: Expense | null
   onClose: () => void
   onSuccess: () => void
+  groupId?: string
+  groupMembers?: GroupMember[]
 }
 
-export default function AddExpenseModal({ categories, expense, onClose, onSuccess }: AddExpenseModalProps) {
+
+
+export default function AddExpenseModal({ categories, expense, onClose, onSuccess, groupId, groupMembers }: AddExpenseModalProps) {
   const { user } = useAuth()
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [date, setDate] = useState('')
+  const [paidBy, setPaidBy] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -40,10 +54,12 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       setDescription(expense.description)
       setCategoryId(expense.category_id)
       setDate(expense.date)
+      setPaidBy(expense.paid_by || '')
     } else {
       setDate(new Date().toISOString().split('T')[0])
+      setPaidBy(user?.id || '')
     }
-  }, [expense])
+  }, [expense, user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +74,10 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
         category_id: categoryId,
         user_id: user.id,
         date,
+        ...(groupId && {
+          group_id: groupId,
+          paid_by: paidBy || user.id
+        })
       }
 
       if (expense) {
@@ -76,18 +96,18 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       }
 
       onSuccess()
-    } catch (error: any) {
-      console.error('Error saving expense:', error.message)
-      toast.error('Error al guardar el gasto: ' + error.message)
+    } catch (error) {
+      console.error('Error saving expense:', error)
+      toast.error('Error al guardar el gasto: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full text-gray-900">
-        <div className="flex items-center justify-between p-6 border-b">
+    <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full text-gray-900 shadow-lg">
+        <div className="flex items-center justify-between p-3">
           <h2 className="text-lg font-semibold text-gray-900">
             {expense ? 'Editar Gasto' : 'Agregar Nuevo Gasto'}
           </h2>
@@ -99,18 +119,15 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-3 space-y-4">
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-              Monto
-            </label>
             <input
               type="number"
               id="amount"
               step="0.01"
               min="0"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full h-10 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
@@ -124,7 +141,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               type="text"
               id="description"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full h-10 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -134,21 +151,30 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">
               Categoría
             </label>
-            <select
-              id="category"
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            <CustomSelect
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-            >
-              <option value="">Selecciona una categoría</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              onChange={setCategoryId}
+              options={categories.map(category => ({ value: category.id, label: category.name }))}
+              placeholder="Selecciona una categoría"
+            />
           </div>
+
+          {groupId && groupMembers && (
+            <div>
+              <label htmlFor="paidBy" className="block text-sm font-medium text-gray-700">
+                Pagado por
+              </label>
+              <CustomSelect
+                value={paidBy}
+                onChange={setPaidBy}
+                options={groupMembers.map(member => ({ 
+                  value: member.user_id, 
+                  label: `${member.user_email || 'Usuario desconocido'}${member.user_id === user?.id ? ' (Tú)' : ''}` 
+                }))}
+                placeholder="Selecciona quién pagó"
+              />
+            </div>
+          )}
 
           <div>
             <label htmlFor="date" className="block text-sm font-medium text-gray-700">
@@ -158,7 +184,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               type="date"
               id="date"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full h-10 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />

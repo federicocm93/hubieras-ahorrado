@@ -40,6 +40,8 @@ export type Database = {
           user_id: string
           date: string
           created_at: string
+          group_id?: string
+          paid_by?: string
         }
         Insert: {
           id?: string
@@ -49,6 +51,8 @@ export type Database = {
           user_id: string
           date: string
           created_at?: string
+          group_id?: string
+          paid_by?: string
         }
         Update: {
           id?: string
@@ -57,6 +61,112 @@ export type Database = {
           category_id?: string
           user_id?: string
           date?: string
+          created_at?: string
+          group_id?: string
+          paid_by?: string
+        }
+      }
+      groups: {
+        Row: {
+          id: string
+          name: string
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_by?: string
+          created_at?: string
+        }
+      }
+      group_members: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          joined_at?: string
+        }
+      }
+      group_invitations: {
+        Row: {
+          id: string
+          group_id: string
+          invited_by: string
+          invited_email: string
+          invited_user_id?: string
+          status: 'pending' | 'accepted' | 'rejected'
+          created_at: string
+          responded_at?: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          invited_by: string
+          invited_email: string
+          invited_user_id?: string
+          status?: 'pending' | 'accepted' | 'rejected'
+          created_at?: string
+          responded_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          invited_by?: string
+          invited_email?: string
+          invited_user_id?: string
+          status?: 'pending' | 'accepted' | 'rejected'
+          created_at?: string
+          responded_at?: string
+        }
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: 'group_invitation' | 'expense_added' | 'payment_request'
+          title: string
+          message: string
+          read: boolean
+          data?: any
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: 'group_invitation' | 'expense_added' | 'payment_request'
+          title: string
+          message: string
+          read?: boolean
+          data?: any
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: 'group_invitation' | 'expense_added' | 'payment_request'
+          title?: string
+          message?: string
+          read?: boolean
+          data?: any
           created_at?: string
         }
       }

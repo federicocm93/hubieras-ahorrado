@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Plus, LogOut, Edit2, Trash2 } from 'lucide-react'
+import { Plus, LogOut, Edit2, Trash2, Bell, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ExpenseChart from './ExpenseChart'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
+import NotificationsPanel from './NotificationsPanel'
+import GroupsManager from './GroupsManager'
 
 interface Category {
   id: string
@@ -34,11 +36,15 @@ export default function Dashboard() {
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showGroups, setShowGroups] = useState(false)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
 
   useEffect(() => {
     if (user) {
       fetchExpenses()
       fetchCategories()
+      fetchUnreadNotificationsCount()
     }
   }, [user])
 
@@ -51,6 +57,7 @@ export default function Dashboard() {
           name
         )
       `)
+      .is('group_id', null)
       .order('date', { ascending: false })
     
     if (error) {
@@ -71,6 +78,22 @@ export default function Dashboard() {
       console.error('Error fetching categories:', error)
     } else {
       setCategories(data || [])
+    }
+  }
+
+  const fetchUnreadNotificationsCount = async () => {
+    if (!user) return
+    
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('read', false)
+    
+    if (error) {
+      console.error('Error fetching notifications count:', error)
+    } else {
+      setUnreadNotifications(data?.length || 0)
     }
   }
 
@@ -116,6 +139,14 @@ export default function Dashboard() {
     )
   }
 
+  if (showGroups) {
+    return (
+      <GroupsManager
+        onBack={() => setShowGroups(false)}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -124,6 +155,23 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Hubieras Ahorrado</h1>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500">Bienvenido, {user?.email}</span>
+              <button
+                onClick={() => setShowNotifications(true)}
+                className="relative text-gray-500 hover:text-gray-700"
+              >
+                <Bell className="h-6 w-6" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadNotifications}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setShowGroups(true)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Users className="h-6 w-6" />
+              </button>
               <button
                 onClick={signOut}
                 className="flex items-center space-x-2 text-gray-500 hover:text-gray-700"
@@ -205,7 +253,11 @@ export default function Dashboard() {
                 {expenses.map((expense) => (
                   <tr key={expense.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(expense.date).toLocaleDateString()}
+                      {new Date(expense.date).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {expense.description}
@@ -297,6 +349,15 @@ export default function Dashboard() {
           }}
         />
       )}
+
+      {/* Notifications Panel */}
+      <NotificationsPanel
+        isOpen={showNotifications}
+        onClose={() => {
+          setShowNotifications(false)
+          fetchUnreadNotificationsCount()
+        }}
+      />
     </div>
   )
 }
