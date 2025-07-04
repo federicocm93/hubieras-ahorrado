@@ -98,14 +98,15 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
 
       if (inviteError) throw inviteError
 
-      // Notifications will be created when users log in and we check for pending invitations
-      // This is handled in the AuthContext
-
+      // Note: Notifications will be created when invited users log in or refresh
+      // The AuthContext will check for pending invitations and create notifications
+      
       toast.success(`Grupo "${groupName}" creado exitosamente`)
       onSuccess()
-    } catch (error: any) {
-      console.error('Error creating group:', error.message)
-      toast.error('Error al crear el grupo: ' + error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('Error creating group:', errorMessage)
+      toast.error('Error al crear el grupo: ' + errorMessage)
     } finally {
       setLoading(false)
     }

@@ -44,7 +44,7 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
   return (
     <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-md w-full text-gray-900 shadow-lg">
-        <div className="flex items-center justify-between p-3">
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 mx-2">
           <h2 className="text-lg font-semibold text-gray-900">
             Agregar Nueva Categoría
           </h2>

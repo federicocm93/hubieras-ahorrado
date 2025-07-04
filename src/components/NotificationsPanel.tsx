@@ -6,13 +6,18 @@ import { supabase } from '@/lib/supabase'
 import { Bell, X, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
 
+interface NotificationData {
+  group_id?: string
+  [key: string]: string | number | boolean | null | undefined
+}
+
 interface Notification {
   id: string
   type: 'group_invitation' | 'expense_added' | 'payment_request'
   title: string
   message: string
   read: boolean
-  data?: any
+  data?: NotificationData
   created_at: string
 }
 
@@ -22,20 +27,37 @@ interface NotificationsPanelProps {
 }
 
 export default function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
-  const { user } = useAuth()
+  const { user, checkPendingInvitations } = useAuth()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen && user) {
-      fetchNotifications()
+      // Check for pending invitations first, then fetch notifications
+      checkPendingInvitations().then(() => {
+        fetchNotifications()
+      }).catch(error => {
+        console.error('Error checking pending invitations:', error)
+        fetchNotifications() // Still fetch notifications even if invitation check fails
+      })
     }
-  }, [isOpen, user])
+  }, [isOpen, user, checkPendingInvitations])
 
   const fetchNotifications = async () => {
-    if (!user) return
+    if (!user) {
+      return
+    }
 
     setLoading(true)
+    setError(null)
+    
+    // Create a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+      setError('Timeout: No se pudieron cargar las notificaciones')
+    }, 10000) // 10 second timeout
+
     try {
       const { data, error } = await supabase
         .from('notifications')
@@ -43,10 +65,17 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      clearTimeout(timeoutId)
+
+      if (error) {
+        throw error
+      }
+
       setNotifications(data || [])
-    } catch (error: any) {
-      console.error('Error fetching notifications:', error.message)
+    } catch (error) {
+      clearTimeout(timeoutId)
+      console.error('Error fetching notifications:', error)
+      setError('Error al cargar notificaciones')
       toast.error('Error al cargar notificaciones')
     } finally {
       setLoading(false)
@@ -67,8 +96,8 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
           notif.id === notificationId ? { ...notif, read: true } : notif
         )
       )
-    } catch (error: any) {
-      console.error('Error marking notification as read:', error.message)
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
     }
   }
 
@@ -110,9 +139,9 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
       // Remove notification from list
       setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
       
-    } catch (error: any) {
-      console.error('Error responding to invitation:', error.message)
-      toast.error('Error al responder la invitación: ' + error.message)
+    } catch (error) {
+      console.error('Error responding to invitation:', error)
+      toast.error('Error al responder la invitación: ' + error)
     }
   }
 
@@ -126,8 +155,8 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
       if (error) throw error
 
       setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
-    } catch (error: any) {
-      console.error('Error deleting notification:', error.message)
+    } catch (error) {
+      console.error('Error deleting notification:', error)
       toast.error('Error al eliminar notificación')
     }
   }
@@ -160,8 +189,8 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
 
   return (
     <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full text-gray-900 max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b">
+      <div className="bg-white rounded-lg max-w-md w-full text-gray-900 max-h-[80vh] flex flex-col shadow-lg">
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 mx-2">
           <h2 className="text-lg font-semibold text-gray-900">
             Notificaciones
           </h2>
@@ -175,8 +204,20 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
 
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center p-8">
+            <div className="flex flex-col items-center justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              <p className="text-sm text-gray-500 mt-2">Cargando notificaciones...</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center p-8 text-red-500">
+              <Bell className="h-12 w-12 mb-4 text-red-300" />
+              <p className="text-center">{error}</p>
+              <button
+                onClick={fetchNotifications}
+                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              >
+                Reintentar
+              </button>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-gray-500">
@@ -220,7 +261,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                             onClick={() => handleInvitationResponse(
                               notification.id,
                               'accepted',
-                              notification.data?.group_id
+                              notification.data?.group_id || ''
                             )}
                             className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                           >
@@ -230,7 +271,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                             onClick={() => handleInvitationResponse(
                               notification.id,
                               'rejected',
-                              notification.data?.group_id
+                              notification.data?.group_id || ''
                             )}
                             className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                           >

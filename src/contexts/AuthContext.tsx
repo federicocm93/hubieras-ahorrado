@@ -8,12 +8,14 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signOut: () => Promise<void>
+  checkPendingInvitations: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: async () => {},
+  checkPendingInvitations: async () => {},
 })
 
 export const useAuth = () => {
@@ -28,80 +30,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Emergency fallback - always set loading to false after 3 seconds
   useEffect(() => {
-    const emergencyTimeout = setTimeout(() => {
-      console.log('🚨 EMERGENCY: Forcing loading to false after 3 seconds')
-      setLoading(false)
-    }, 3000)
-
-    return () => clearTimeout(emergencyTimeout)
-  }, [])
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-
-    // Get initial session with aggressive timeout and fallback
+    // Get initial session
     const getInitialSession = async () => {
-      console.log('🔍 Starting auth check...')
-      
-      // Set a fallback timeout that will always resolve loading
-      timeoutId = setTimeout(() => {
-        console.log('⚠️ Auth timeout reached, forcing loading to false')
-        setLoading(false)
-        setUser(null)
-      }, 5000)
-
       try {
-        console.log('📡 Getting session from Supabase...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error('❌ Error getting session:', error)
-          clearInvalidSession()
+          console.error('Error getting session:', error)
           setUser(null)
           return
         }
         
         if (session?.user) {
-          console.log('✅ Session found, user:', session.user.email)
           setUser(session.user)
           
           // Check for pending invitations (non-blocking)
-          setTimeout(() => {
-            checkPendingInvitations(session.user).catch(error => {
-              console.error('Error checking pending invitations:', error)
-            })
-          }, 100)
+          checkPendingInvitationsForUser(session.user).catch(error => {
+            console.error('Error checking pending invitations:', error)
+          })
         } else {
-          console.log('ℹ️ No session found')
           setUser(null)
         }
       } catch (error) {
-        console.error('💥 Failed to get initial session:', error)
-        clearInvalidSession()
+        console.error('Failed to get initial session:', error)
         setUser(null)
       } finally {
-        clearTimeout(timeoutId)
         setLoading(false)
-        console.log('✅ Auth check completed')
-      }
-    }
-
-    const clearInvalidSession = () => {
-      try {
-        console.log('🧹 Clearing invalid session data...')
-        // Clear localStorage immediately and synchronously
-        const keys = Object.keys(localStorage)
-        keys.forEach(key => {
-          if (key.includes('supabase') || key.includes('auth')) {
-            localStorage.removeItem(key)
-          }
-        })
-        // Also try to sign out (but don't await it)
-        supabase.auth.signOut().catch(() => {})
-      } catch (error) {
-        console.error('Error clearing session:', error)
       }
     }
 
@@ -116,8 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (event === 'SIGNED_IN' && session?.user) {
           try {
             await createDefaultCategories(session.user.id)
-            // Don't await this to avoid blocking
-            checkPendingInvitations(session.user).catch(error => {
+            checkPendingInvitationsForUser(session.user).catch(error => {
               console.error('Error checking pending invitations:', error)
             })
           } catch (error) {
@@ -130,14 +84,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     )
 
     return () => {
-      clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [])
 
   const createDefaultCategories = async (userId: string) => {
     try {
-      // Use a more thorough check to prevent race conditions
+      // Check if user already has categories
       const { data: existingCategories, error: selectError } = await supabase
         .from('categories')
         .select('id')
@@ -149,11 +102,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (existingCategories && existingCategories.length > 0) {
-        console.log('User already has categories, skipping creation')
         return // User already has categories
       }
 
-      // Create default categories (Spanish version to replace English DB function)
+      // Create default categories
       const defaultCategories = [
         'Comida y Restaurantes',
         'Transporte', 
@@ -172,25 +124,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         is_default: true
       }))
 
-      // Insert categories with conflict handling
       const { error: insertError } = await supabase
         .from('categories')
         .insert(categoriesToInsert)
 
       if (insertError) {
         console.error('Error creating default categories:', insertError)
-      } else {
-        console.log('Default categories created successfully')
       }
     } catch (error) {
       console.error('Error in createDefaultCategories:', error)
     }
   }
 
-  const checkPendingInvitations = async (user: User) => {
+  const checkPendingInvitationsForUser = async (user: User) => {
     try {
+      console.log('🔍 Checking pending invitations for user:', user.email)
+      
       // Check for pending invitations for this user's email
-      const { data: pendingInvitations } = await supabase
+      const { data: pendingInvitations, error: selectError } = await supabase
         .from('group_invitations')
         .select(`
           id,
@@ -203,9 +154,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('status', 'pending')
         .is('invited_user_id', null)
 
-      if (!pendingInvitations || pendingInvitations.length === 0) {
+      console.log('📋 Pending invitations query result:', { pendingInvitations, selectError })
+
+      if (selectError) {
+        console.error('Error fetching pending invitations:', selectError)
         return
       }
+
+      if (!pendingInvitations || pendingInvitations.length === 0) {
+        console.log('✅ No pending invitations found')
+        return
+      }
+
+      console.log('📨 Found pending invitations:', pendingInvitations)
 
       // Update invitations to include the user_id
       const { error: updateError } = await supabase
@@ -220,27 +181,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return
       }
 
+      console.log('✅ Updated invitations with user_id')
+
       // Create notifications for each pending invitation
-      const notifications = pendingInvitations.map(invitation => ({
-        user_id: user.id,
-        type: 'group_invitation' as const,
-        title: 'Invitación a grupo',
-        message: `Te han invitado al grupo "${(invitation.groups as any).name}"`,
-        data: {
-          group_id: invitation.group_id,
-          invitation_id: invitation.id
+      const notifications = pendingInvitations.map(invitation => {
+        // Extract group name from the joined data
+        let groupName = 'Unknown'
+        try {
+          const groups = invitation.groups as unknown
+          if (Array.isArray(groups) && groups.length > 0) {
+            groupName = groups[0]?.name || 'Unknown'
+          } else if (groups && typeof groups === 'object' && 'name' in groups) {
+            groupName = (groups as { name: string }).name || 'Unknown'
+          }
+        } catch (error) {
+          console.warn('Could not extract group name:', error)
         }
-      }))
+        
+        console.log('📝 Creating notification for invitation:', { invitation, groupName })
+        
+        return {
+          user_id: user.id,
+          type: 'group_invitation' as const,
+          title: 'Invitación a grupo',
+          message: `Te han invitado al grupo "${groupName}"`,
+          data: {
+            group_id: invitation.group_id,
+            invitation_id: invitation.id
+          }
+        }
+      })
+
+      console.log('📝 Creating notifications:', notifications)
 
       const { error: notificationError } = await supabase
         .from('notifications')
         .insert(notifications)
 
       if (notificationError) {
-        console.error('Error creating notifications:', notificationError)
+        console.error('❌ Error creating notifications:', notificationError)
+      } else {
+        console.log('✅ Notifications created successfully')
       }
     } catch (error) {
-      console.error('Error checking pending invitations:', error)
+      console.error('❌ Error checking pending invitations:', error)
+    }
+  }
+
+  const checkPendingInvitations = async () => {
+    if (user) {
+      await checkPendingInvitationsForUser(user)
     }
   }
 
@@ -252,6 +242,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     loading,
     signOut,
+    checkPendingInvitations,
   }
 
   return (

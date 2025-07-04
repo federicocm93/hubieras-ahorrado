@@ -52,11 +52,13 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddExpense, setShowAddExpense] = useState(false)
-  const [editingExpense, setEditingExpense] = useState<any>(null)
+  const [editingExpense, setEditingExpense] = useState<SharedExpense | null>(null)
   const [balances, setBalances] = useState<Record<string, number>>({})
+  const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>(group.members)
 
   useEffect(() => {
     if (user && group) {
+      fetchGroupMembers()
       fetchSharedExpenses()
       fetchCategories()
     }
@@ -64,10 +66,37 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
   useEffect(() => {
     calculateBalances()
-  }, [expenses, group.members])
+  }, [expenses, currentGroupMembers])
+
+  const fetchGroupMembers = async () => {
+    if (!user) return
+
+    try {
+      // Use the database function to get group members with their real emails
+      const { data: membersWithEmails, error: membersError } = await supabase
+        .rpc('get_group_members_with_emails', { group_id_param: group.id })
+
+      if (membersError) {
+        console.log('⚠️ Could not fetch members with emails for group:', group.id, membersError.message)
+        // Fallback to the prop data
+        setCurrentGroupMembers(group.members)
+        return
+      }
+
+      console.log('✅ Successfully fetched group members with emails:', membersWithEmails)
+      setCurrentGroupMembers(membersWithEmails || group.members)
+    } catch (error) {
+      console.log('⚠️ Error fetching group members:', error)
+      // Fallback to the prop data
+      setCurrentGroupMembers(group.members)
+    }
+  }
 
   const fetchSharedExpenses = async () => {
     if (!user) return
+
+    console.log('🔍 Fetching shared expenses for group:', group.id)
+    console.log('👥 Group members:', currentGroupMembers)
 
     try {
       const { data, error } = await supabase
@@ -79,23 +108,66 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         .eq('group_id', group.id)
         .order('date', { ascending: false })
 
-      if (error) throw error
+      console.log('📊 Expenses query result:', { data, error })
+
+      if (error) {
+        console.error('❌ Database error:', error)
+        throw error
+      }
+
+      if (!data) {
+        console.log('✅ No expenses found')
+        setExpenses([])
+        return
+      }
+
+      console.log('💰 Raw expenses data:', data)
 
       // Get user emails for paid_by field
       const expensesWithEmails = await Promise.all(
-        (data || []).map(async (expense) => {
-          const member = group.members.find(m => m.user_id === expense.paid_by)
-          return {
+        data.map(async (expense) => {
+          console.log('Processing expense:', expense)
+          
+          // Try to get user email from the database
+          let userEmail = 'Usuario desconocido'
+          
+          try {
+            const { data: userEmailData, error: userEmailError } = await supabase
+              .rpc('get_user_email_for_expense', { user_id_param: expense.paid_by })
+            
+                         if (userEmailError) {
+               console.log('⚠️ Could not fetch user email via RPC:', userEmailError.message)
+               // Fallback to group members data
+               const member = currentGroupMembers.find(m => m.user_id === expense.paid_by)
+               userEmail = member?.user_email || 'Usuario desconocido'
+             } else {
+               userEmail = userEmailData || 'Usuario desconocido'
+             }
+           } catch (error) {
+             console.log('⚠️ Error fetching user email:', error)
+             // Fallback to group members data
+             const member = currentGroupMembers.find(m => m.user_id === expense.paid_by)
+             userEmail = member?.user_email || 'Usuario desconocido'
+           }
+          
+          const processedExpense = {
             ...expense,
-            paid_by_email: member?.user_email || 'Usuario desconocido'
+            paid_by_email: userEmail,
+            category: expense.category || { id: '', name: 'Sin categoría' }
           }
+          
+          console.log('Processed expense:', processedExpense)
+          return processedExpense
         })
       )
 
+      console.log('✅ Final expenses with emails:', expensesWithEmails)
       setExpenses(expensesWithEmails)
-    } catch (error: any) {
-      console.error('Error fetching shared expenses:', error.message)
-      toast.error('Error al cargar gastos compartidos')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ Error fetching shared expenses:', errorMessage)
+      console.error('Full error object:', error)
+      toast.error('Error al cargar gastos compartidos: ' + errorMessage)
     } finally {
       setLoading(false)
     }
@@ -113,8 +185,9 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
       if (error) throw error
       setCategories(data || [])
-    } catch (error: any) {
-      console.error('Error fetching categories:', error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('Error fetching categories:', errorMessage)
     }
   }
 
@@ -122,19 +195,19 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     const memberBalances: Record<string, number> = {}
     
     // Initialize balances for all members
-    group.members.forEach(member => {
+    currentGroupMembers.forEach(member => {
       memberBalances[member.user_id] = 0
     })
 
     // Calculate what each person paid vs what they owe
     expenses.forEach(expense => {
-      const amountPerPerson = expense.amount / group.members.length
+      const amountPerPerson = expense.amount / currentGroupMembers.length
       
       // Person who paid gets credit
       memberBalances[expense.paid_by] += expense.amount - amountPerPerson
       
       // Everyone else owes their share
-      group.members.forEach(member => {
+      currentGroupMembers.forEach(member => {
         if (member.user_id !== expense.paid_by) {
           memberBalances[member.user_id] -= amountPerPerson
         }
@@ -162,9 +235,10 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
       setExpenses(prev => prev.filter(expense => expense.id !== expenseId))
       toast.success('Gasto eliminado exitosamente')
-    } catch (error: any) {
-      console.error('Error deleting expense:', error.message)
-      toast.error('Error al eliminar el gasto: ' + error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('Error deleting expense:', errorMessage)
+      toast.error('Error al eliminar el gasto: ' + errorMessage)
     }
   }
 
@@ -182,7 +256,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   }
 
   const getMemberEmail = (userId: string) => {
-    const member = group.members.find(m => m.user_id === userId)
+    const member = currentGroupMembers.find(m => m.user_id === userId)
     return member?.user_email || 'Usuario desconocido'
   }
 
@@ -213,7 +287,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                     {group.name}
                   </h1>
                   <p className="text-sm text-gray-600">
-                    {group.members.length} miembro{group.members.length !== 1 ? 's' : ''}
+                    {currentGroupMembers.length} miembro{currentGroupMembers.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
@@ -231,7 +305,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           <div className="px-6 py-4 bg-gray-50 border-b">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Balances</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {group.members.map(member => (
+              {currentGroupMembers.map(member => (
                 <div key={member.user_id} className="bg-white p-4 rounded-lg border">
                   <div className="flex items-center justify-between">
                     <div>
@@ -302,7 +376,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                           <span>Pagado por: {expense.paid_by_email}</span>
                         </div>
                         <div className="mt-2 text-sm text-gray-600">
-                          {formatCurrency(expense.amount / group.members.length)} por persona
+                          {formatCurrency(expense.amount / currentGroupMembers.length)} por persona
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
@@ -338,21 +412,29 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
             fetchSharedExpenses()
           }}
           groupId={group.id}
-          groupMembers={group.members}
+          groupMembers={currentGroupMembers}
         />
       )}
 
       {editingExpense && (
         <AddExpenseModal
           categories={categories}
-          expense={editingExpense}
+          expense={{
+            id: editingExpense.id,
+            amount: editingExpense.amount,
+            description: editingExpense.description,
+            date: editingExpense.date,
+            category_id: editingExpense.category.id,
+            group_id: editingExpense.group_id,
+            paid_by: editingExpense.paid_by
+          }}
           onClose={() => setEditingExpense(null)}
           onSuccess={() => {
             setEditingExpense(null)
             fetchSharedExpenses()
           }}
           groupId={group.id}
-          groupMembers={group.members}
+          groupMembers={currentGroupMembers}
         />
       )}
     </div>

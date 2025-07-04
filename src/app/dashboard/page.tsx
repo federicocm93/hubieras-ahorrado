@@ -3,15 +3,15 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Auth from '@/components/Auth'
+import Dashboard from '@/components/Dashboard'
 
-export default function Home() {
+export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && user) {
-      router.push('/dashboard')
+    if (!loading && !user) {
+      router.push('/')
     }
   }, [user, loading, router])
 
@@ -23,5 +23,9 @@ export default function Home() {
     )
   }
 
-  return user ? null : <Auth />
-}
+  if (!user) {
+    return null
+  }
+
+  return <Dashboard />
+} 

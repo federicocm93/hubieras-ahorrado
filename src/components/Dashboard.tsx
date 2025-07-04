@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Plus, LogOut, Edit2, Trash2, Bell, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -9,7 +10,6 @@ import ExpenseChart from './ExpenseChart'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
 import NotificationsPanel from './NotificationsPanel'
-import GroupsManager from './GroupsManager'
 
 interface Category {
   id: string
@@ -30,6 +30,7 @@ interface Expense {
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
+  const router = useRouter()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +38,6 @@ export default function Dashboard() {
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [showGroups, setShowGroups] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
 
   useEffect(() => {
@@ -139,13 +139,7 @@ export default function Dashboard() {
     )
   }
 
-  if (showGroups) {
-    return (
-      <GroupsManager
-        onBack={() => setShowGroups(false)}
-      />
-    )
-  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -167,7 +161,7 @@ export default function Dashboard() {
                 )}
               </button>
               <button
-                onClick={() => setShowGroups(true)}
+                onClick={() => router.push('/groups')}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <Users className="h-6 w-6" />
