@@ -72,23 +72,54 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     if (!user) return
 
     try {
-      // Use the database function to get group members with their real emails
-      const { data: membersWithEmails, error: membersError } = await supabase
-        .rpc('get_group_members_with_emails', { group_id_param: group.id })
-
-      if (membersError) {
-        console.log('⚠️ Could not fetch members with emails for group:', group.id, membersError.message)
-        // Fallback to the prop data
+      console.log('🔍 Fetching group members for group:', group.id)
+      
+      // Use the passed group.members as primary source
+      if (group.members && group.members.length > 0) {
+        console.log('✅ Using group members from props:', group.members)
         setCurrentGroupMembers(group.members)
         return
       }
 
-      console.log('✅ Successfully fetched group members with emails:', membersWithEmails)
-      setCurrentGroupMembers(membersWithEmails || group.members)
+      // Fallback: try to fetch from database
+      const { data: members, error: membersError } = await supabase
+        .from('group_members')
+        .select('id, user_id, joined_at')
+        .eq('group_id', group.id)
+
+      console.log('📊 Database query result:', { members, membersError })
+
+      if (membersError) {
+        console.log('⚠️ Could not fetch members for group:', group.id, membersError.message)
+        // Fallback to basic current user data
+        const fallbackMembers = [{
+          id: 'current-user',
+          user_id: user.id,
+          user_email: user.email,
+          joined_at: new Date().toISOString()
+        }]
+        setCurrentGroupMembers(fallbackMembers)
+        return
+      }
+
+      // Map member data with emails (will get real emails from group.member_emails)
+      const membersWithEmails = (members || []).map((member) => ({
+        ...member,
+        user_email: member.user_id === user.id ? user.email : 'Email no disponible'
+      }))
+
+      console.log('✅ Successfully fetched group members:', membersWithEmails)
+      setCurrentGroupMembers(membersWithEmails)
     } catch (error) {
       console.log('⚠️ Error fetching group members:', error)
-      // Fallback to the prop data
-      setCurrentGroupMembers(group.members)
+      // Fallback to current user only
+      const fallbackMembers = [{
+        id: 'current-user',
+        user_id: user.id,
+        user_email: user.email,
+        joined_at: new Date().toISOString()
+      }]
+      setCurrentGroupMembers(fallbackMembers)
     }
   }
 
@@ -131,24 +162,14 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           // Try to get user email from the database
           let userEmail = 'Usuario desconocido'
           
-          try {
-            const { data: userEmailData, error: userEmailError } = await supabase
-              .rpc('get_user_email_for_expense', { user_id_param: expense.paid_by })
-            
-                         if (userEmailError) {
-               console.log('⚠️ Could not fetch user email via RPC:', userEmailError.message)
-               // Fallback to group members data
-               const member = currentGroupMembers.find(m => m.user_id === expense.paid_by)
-               userEmail = member?.user_email || 'Usuario desconocido'
-             } else {
-               userEmail = userEmailData || 'Usuario desconocido'
-             }
-           } catch (error) {
-             console.log('⚠️ Error fetching user email:', error)
-             // Fallback to group members data
-             const member = currentGroupMembers.find(m => m.user_id === expense.paid_by)
-             userEmail = member?.user_email || 'Usuario desconocido'
-           }
+          // Use current user's email if it's the current user, otherwise fallback
+          if (expense.paid_by === user.id) {
+            userEmail = user.email || 'Usuario desconocido'
+          } else {
+            // Try to get email from group members data
+            const member = currentGroupMembers.find(m => m.user_id === expense.paid_by)
+            userEmail = member?.user_email || 'Usuario desconocido'
+          }
           
           const processedExpense = {
             ...expense,
@@ -192,12 +213,17 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   }
 
   const calculateBalances = () => {
+    console.log('💰 Calculating balances for members:', currentGroupMembers)
+    console.log('💰 With expenses:', expenses)
+    
     const memberBalances: Record<string, number> = {}
     
     // Initialize balances for all members
     currentGroupMembers.forEach(member => {
       memberBalances[member.user_id] = 0
     })
+
+    console.log('💰 Initialized balances:', memberBalances)
 
     // Calculate what each person paid vs what they owe
     expenses.forEach(expense => {
@@ -214,6 +240,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
       })
     })
 
+    console.log('💰 Final calculated balances:', memberBalances)
     setBalances(memberBalances)
   }
 

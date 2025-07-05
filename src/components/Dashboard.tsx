@@ -164,7 +164,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-col sm:flex-row">
             <Image src="/logo.png" alt="Logo" width={400} height={100} className="h-[100px] w-[400px]" />
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500">👋 Bienvenido, {user?.email}</span>

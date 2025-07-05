@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Users, Plus, Trash2, Calendar } from 'lucide-react'
 import CreateGroupModal from './CreateGroupModal'
-import SharedExpenses from './SharedExpenses'
 import toast from 'react-hot-toast'
 
 interface Group {
@@ -46,7 +45,6 @@ export default function GroupsManager() {
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -155,45 +153,33 @@ export default function GroupsManager() {
         index === self.findIndex((g) => g.id === group.id)
       )
 
-      // Step 7: Get all members for each group with their real emails
+      // Step 7: Get all members for each group with their emails
       const groupsWithMembers = await Promise.all(
         uniqueGroups.map(async (group) => {
           try {
-            // Use the database function to get group members with their real emails
-            const { data: membersWithEmails, error: membersError } = await supabase
-              .rpc('get_group_members_with_emails', { group_id_param: group.id })
+            // Get basic member info
+            const { data: members, error: membersError } = await supabase
+              .from('group_members')
+              .select('id, user_id, joined_at')
+              .eq('group_id', group.id)
 
             if (membersError) {
-              console.log('⚠️ Could not fetch members with emails for group:', group.id, membersError.message)
-              // Fallback to basic member info without emails
-              const { data: members, error: basicMembersError } = await supabase
-                .from('group_members')
-                .select('id, user_id, joined_at')
-                .eq('group_id', group.id)
-
-              if (basicMembersError) {
-                console.log('⚠️ Could not fetch basic members for group:', group.id, basicMembersError.message)
-                return {
-                  ...group,
-                  members: []
-                }
-              }
-
-              // Use fallback email strategy
-              const membersWithFallbackEmails = (members || []).map((member) => ({
-                ...member,
-                user_email: member.user_id === user.id ? user.email : 'Email no disponible'
-              }))
-
+              console.log('⚠️ Could not fetch members for group:', group.id, membersError.message)
               return {
                 ...group,
-                members: membersWithFallbackEmails
+                members: []
               }
             }
 
+            // Get emails for each member (will use real emails from group.member_emails)
+            const membersWithEmails = (members || []).map((member) => ({
+              ...member,
+              user_email: member.user_id === user.id ? user.email : 'Email no disponible'
+            }))
+
             return {
               ...group,
-              members: membersWithEmails || []
+              members: membersWithEmails
             }
           } catch (error) {
             console.log('⚠️ Error fetching members for group:', group.id, error)
@@ -300,14 +286,6 @@ export default function GroupsManager() {
     })
   }
 
-  if (selectedGroup) {
-    return (
-      <SharedExpenses
-        group={selectedGroup}
-        onBack={() => setSelectedGroup(null)}
-      />
-    )
-  }
 
   if (loading) {
     return (
@@ -436,7 +414,7 @@ export default function GroupsManager() {
                   <div
                     key={group.id}
                     className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedGroup(group)}
+                    onClick={() => router.push(`/groups/${group.id}`)}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
