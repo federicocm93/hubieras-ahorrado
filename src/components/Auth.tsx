@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
@@ -41,7 +42,7 @@ export default function Auth() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center mb-6">
-            <img src="/logo.png" alt="Logo" className="h-[100px] w-[400px]" />
+            <Image src="/logo.png" alt="Logo" width={400} height={100} className="h-[100px] w-[400px]" />
           </div>
         </div>
         <form className="space-y-6 bg-white p-8 rounded-lg shadow-md" onSubmit={handleAuth}>

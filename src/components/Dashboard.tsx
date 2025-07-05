@@ -10,6 +10,7 @@ import ExpenseChart from './ExpenseChart'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
 import NotificationsPanel from './NotificationsPanel'
+import Image from 'next/image'
 
 interface Category {
   id: string
@@ -130,6 +131,24 @@ export default function Dashboard() {
   }
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  
+  const getMostExpensiveCategory = () => {
+    const categoryTotals = expenses.reduce((acc, expense) => {
+      const categoryName = expense.categories.name
+      acc[categoryName] = (acc[categoryName] || 0) + expense.amount
+      return acc
+    }, {} as Record<string, number>)
+    
+    if (Object.keys(categoryTotals).length === 0) return null
+    
+    const maxCategory = Object.entries(categoryTotals).reduce((max, [category, amount]) => 
+      amount > max.amount ? { category, amount } : max
+    , { category: '', amount: 0 })
+    
+    return maxCategory
+  }
+  
+  const mostExpensiveCategory = getMostExpensiveCategory()
 
   if (loading) {
     return (
@@ -146,9 +165,9 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <img src="/logo.png" alt="Logo" className="h-[50px] w-[200px]" />
+            <Image src="/logo.png" alt="Logo" width={200} height={50} className="h-[50px] w-[200px]" />
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Bienvenido, {user?.email}</span>
+              <span className="text-sm text-gray-500">👋 Bienvenido, {user?.email}</span>
               <button
                 onClick={() => setShowNotifications(true)}
                 className="relative text-gray-500 hover:text-gray-700"
@@ -182,37 +201,47 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Summary Card */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumen</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Resumen</h2>
             <div className="text-3xl font-bold text-indigo-600">
               ${totalExpenses.toFixed(2)}
             </div>
-            <p className="text-sm text-gray-500 mt-2">Gastos totales</p>
+            <p className="text-sm text-gray-500 mt-2">💰 Gastos totales</p>
+            
+            {mostExpensiveCategory && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-lg font-semibold text-gray-900">{mostExpensiveCategory.category}</span>
+                  <span className="text-lg font-bold text-red-600">${mostExpensiveCategory.amount.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">⚡ Acciones Rápidas</h2>
             <div className="space-y-3">
               <button
                 onClick={() => setShowAddExpense(true)}
                 className="w-full flex items-center justify-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
               >
                 <Plus className="h-4 w-4" />
-                <span>Agregar Gasto</span>
+                <span>💸 Agregar Gasto</span>
               </button>
               <button
                 onClick={() => setShowAddCategory(true)}
                 className="w-full flex items-center justify-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
               >
                 <Plus className="h-4 w-4" />
-                <span>Agregar Categoría</span>
+                <span>📝 Agregar Categoría</span>
               </button>
             </div>
           </div>
 
           {/* Chart */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Gastos Mensuales</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📈 Gastos Mensuales</h2>
             <ExpenseChart expenses={expenses} />
           </div>
         </div>
@@ -220,7 +249,7 @@ export default function Dashboard() {
         {/* Recent Expenses */}
         <div className="mt-8 bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Gastos Recientes</h2>
+            <h2 className="text-lg font-semibold text-gray-900">📋 Gastos Recientes</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -288,7 +317,7 @@ export default function Dashboard() {
         {/* Categories */}
         <div className="mt-8 bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Categorías</h2>
+            <h2 className="text-lg font-semibold text-gray-900">🏷️ Categorías</h2>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
