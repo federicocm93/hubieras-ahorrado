@@ -6,27 +6,8 @@ import { supabase } from '@/lib/supabase'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import CustomSelect from '@/components/ui/CustomSelect'
-
-interface Category {
-  id: string
-  name: string
-}
-
-interface Expense {
-  id: string
-  amount: number
-  description: string
-  date: string
-  category_id: string
-  group_id?: string
-  paid_by?: string
-}
-
-interface GroupMember {
-  id: string
-  user_id: string
-  user_email?: string
-}
+import { useExpensesStore } from '@/stores/expensesStore'
+import { Category, Expense, GroupMember } from '@/stores/types'
 
 interface AddExpenseModalProps {
   categories: Category[]
@@ -41,6 +22,7 @@ interface AddExpenseModalProps {
 
 export default function AddExpenseModal({ categories, expense, onClose, onSuccess, groupId, groupMembers }: AddExpenseModalProps) {
   const { user } = useAuth()
+  const { addExpense, updateExpense } = useExpensesStore()
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -54,7 +36,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       setDescription(expense.description)
       setCategoryId(expense.category_id)
       setDate(expense.date)
-      setPaidBy(expense.paid_by || '')
+      setPaidBy((expense as { paid_by?: string }).paid_by || '')
     } else {
       setDate(new Date().toISOString().split('T')[0])
       setPaidBy(user?.id || '')
@@ -74,25 +56,35 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
         category_id: categoryId,
         user_id: user.id,
         date,
+        group_id: groupId || null,
         ...(groupId && {
-          group_id: groupId,
           paid_by: paidBy || user.id
         })
       }
 
       if (expense) {
-        const { error } = await supabase
-          .from('expenses')
-          .update(expenseData)
-          .eq('id', expense.id)
-        
-        if (error) throw error
+        // For personal expenses, use the store. For group expenses, use direct API
+        if (!groupId) {
+          await updateExpense(expense.id, expenseData)
+        } else {
+          const { error } = await supabase
+            .from('expenses')
+            .update(expenseData)
+            .eq('id', expense.id)
+          
+          if (error) throw error
+        }
       } else {
-        const { error } = await supabase
-          .from('expenses')
-          .insert([expenseData])
-        
-        if (error) throw error
+        // For personal expenses, use the store. For group expenses, use direct API
+        if (!groupId) {
+          await addExpense(expenseData)
+        } else {
+          const { error } = await supabase
+            .from('expenses')
+            .insert([expenseData])
+          
+          if (error) throw error
+        }
       }
 
       onSuccess()

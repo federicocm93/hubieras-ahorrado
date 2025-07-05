@@ -5,42 +5,44 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Plus, LogOut, Edit2, Trash2, Bell, Users } from 'lucide-react'
-import toast from 'react-hot-toast'
 import ExpenseChart from './ExpenseChart'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
 import NotificationsPanel from './NotificationsPanel'
 import LoadingOverlay from './LoadingOverlay'
 import Image from 'next/image'
-
-interface Category {
-  id: string
-  name: string
-  is_default: boolean
-}
-
-interface Expense {
-  id: string
-  amount: number
-  description: string
-  date: string
-  category_id: string
-  categories: {
-    name: string
-  }
-}
+import { useCategoriesStore } from '@/stores/categoriesStore'
+import { useExpensesStore } from '@/stores/expensesStore'
+import { Expense } from '@/stores/types'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const router = useRouter()
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
+  
+  // Zustand stores
+  const { 
+    categories, 
+    loading: categoriesLoading, 
+    fetchCategories, 
+    deleteCategory: deleteCategoryFromStore 
+  } = useCategoriesStore()
+  const { 
+    expenses, 
+    loading: expensesLoading, 
+    fetchExpenses, 
+    deleteExpense: deleteExpenseFromStore,
+    getTotalExpenses 
+  } = useExpensesStore()
+  
+  // Local state
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showNotifications, setShowNotifications] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  
+  // Combined loading state
+  const loading = categoriesLoading || expensesLoading
 
   useEffect(() => {
     if (user) {
@@ -48,40 +50,8 @@ export default function Dashboard() {
       fetchCategories()
       fetchUnreadNotificationsCount()
     }
-  }, [user])
+  }, [user, fetchExpenses, fetchCategories])
 
-  const fetchExpenses = async () => {
-    const { data, error } = await supabase
-      .from('expenses')
-      .select(`
-        *,
-        categories (
-          name
-        )
-      `)
-      .is('group_id', null)
-      .order('date', { ascending: false })
-    
-    if (error) {
-      console.error('Error fetching expenses:', error)
-    } else {
-      setExpenses(data || [])
-    }
-    setLoading(false)
-  }
-
-  const fetchCategories = async () => {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name')
-    
-    if (error) {
-      console.error('Error fetching categories:', error)
-    } else {
-      setCategories(data || [])
-    }
-  }
 
   const fetchUnreadNotificationsCount = async () => {
     if (!user) return
@@ -100,38 +70,22 @@ export default function Dashboard() {
   }
 
   const deleteExpense = async (id: string) => {
-    const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id)
-    
-    if (error) {
+    try {
+      await deleteExpenseFromStore(id)
+    } catch (error) {
       console.error('Error deleting expense:', error)
-    } else {
-      fetchExpenses()
     }
   }
 
   const deleteCategory = async (id: string) => {
-    const category = categories.find(c => c.id === id)
-    if (category?.is_default) {
-      toast.error('No se pueden eliminar las categorías predeterminadas')
-      return
-    }
-
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', id)
-    
-    if (error) {
+    try {
+      await deleteCategoryFromStore(id)
+    } catch (error) {
       console.error('Error deleting category:', error)
-    } else {
-      fetchCategories()
     }
   }
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const totalExpenses = getTotalExpenses()
   
   const getMostExpensiveCategory = () => {
     const categoryTotals = expenses.reduce((acc, expense) => {

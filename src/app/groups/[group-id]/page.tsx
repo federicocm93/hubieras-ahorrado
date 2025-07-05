@@ -131,6 +131,10 @@ export default function GroupExpensesPage() {
   }
 
 
+  if (loading) {
+    return <LoadingOverlay isVisible={true} />
+  }
+
   if (!group) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -154,7 +158,6 @@ export default function GroupExpensesPage() {
         group={group as Group}
         onBack={() => router.push('/groups')}
       />
-      <LoadingOverlay isVisible={loading} />
     </div>
   )
 }

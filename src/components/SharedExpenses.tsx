@@ -7,6 +7,7 @@ import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
+import { useCategoriesStore } from '@/stores/categoriesStore'
 
 interface Group {
   id: string
@@ -37,10 +38,6 @@ interface SharedExpense {
   group_id: string
 }
 
-interface Category {
-  id: string
-  name: string
-}
 
 interface SharedExpensesProps {
   group: Group
@@ -49,8 +46,8 @@ interface SharedExpensesProps {
 
 export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const { user } = useAuth()
+  const { categories, fetchCategories } = useCategoriesStore()
   const [expenses, setExpenses] = useState<SharedExpense[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [editingExpense, setEditingExpense] = useState<SharedExpense | null>(null)
@@ -63,7 +60,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
       fetchSharedExpenses()
       fetchCategories()
     }
-  }, [user, group])
+  }, [user, group, fetchCategories])
 
   useEffect(() => {
     calculateBalances()
@@ -195,23 +192,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     }
   }
 
-  const fetchCategories = async () => {
-    if (!user) return
-
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('name')
-
-      if (error) throw error
-      setCategories(data || [])
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('Error fetching categories:', errorMessage)
-    }
-  }
 
   const calculateBalances = () => {
     console.log('💰 Calculating balances for members:', currentGroupMembers)
@@ -447,7 +427,11 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
             date: editingExpense.date,
             category_id: editingExpense.category.id,
             group_id: editingExpense.group_id,
-            paid_by: editingExpense.paid_by
+            user_id: editingExpense.paid_by,
+            created_at: editingExpense.date,
+            categories: {
+              name: editingExpense.category.name
+            }
           }}
           onClose={() => setEditingExpense(null)}
           onSuccess={() => {

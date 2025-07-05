@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useCategoriesStore } from '@/stores/categoriesStore'
 
 interface AddCategoryModalProps {
   onClose: () => void
@@ -13,6 +13,7 @@ interface AddCategoryModalProps {
 
 export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModalProps) {
   const { user } = useAuth()
+  const { addCategory } = useCategoriesStore()
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,15 +24,12 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
     setLoading(true)
 
     try {
-      const { error } = await supabase
-        .from('categories')
-        .insert([{
-          name,
-          user_id: user.id,
-          is_default: false,
-        }])
+      await addCategory({
+        name,
+        user_id: user.id,
+        is_default: false,
+      })
       
-      if (error) throw error
       onSuccess()
     } catch (error) {
       console.error('Error creating category:', error)
