@@ -146,7 +146,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <h1 className="text-2xl font-bold text-gray-900">Hubieras Ahorrado</h1>
+            <img src="/logo.png" alt="Logo" className="h-[50px] w-[200px]" />
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500">Bienvenido, {user?.email}</span>
               <button
