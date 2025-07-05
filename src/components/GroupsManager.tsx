@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Users, Plus, Trash2, Calendar } from 'lucide-react'
 import CreateGroupModal from './CreateGroupModal'
+import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
 
 interface Group {
@@ -287,13 +288,6 @@ export default function GroupsManager() {
   }
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -494,6 +488,9 @@ export default function GroupsManager() {
           }}
         />
       )}
+
+      {/* Loading Overlay */}
+      <LoadingOverlay isVisible={loading} />
     </div>
   )
 }

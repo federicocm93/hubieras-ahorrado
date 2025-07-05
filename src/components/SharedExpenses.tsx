@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
+import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
 
 interface Group {
@@ -54,7 +55,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [editingExpense, setEditingExpense] = useState<SharedExpense | null>(null)
   const [balances, setBalances] = useState<Record<string, number>>({})
-  const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>(group.members)
+  const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>([])
 
   useEffect(() => {
     if (user && group) {
@@ -72,12 +73,12 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     if (!user) return
 
     try {
-      console.log('🔍 Fetching group members for group:', group.id)
+      console.log('🔍 Fetching group members for group:', group?.id)
       
       // Use the passed group.members as primary source
-      if (group.members && group.members.length > 0) {
-        console.log('✅ Using group members from props:', group.members)
-        setCurrentGroupMembers(group.members)
+      if (group?.members && group?.members.length > 0) {
+        console.log('✅ Using group members from props:', group?.members)
+        setCurrentGroupMembers(group?.members)
         return
       }
 
@@ -85,12 +86,12 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
       const { data: members, error: membersError } = await supabase
         .from('group_members')
         .select('id, user_id, joined_at')
-        .eq('group_id', group.id)
+        .eq('group_id', group?.id)
 
       console.log('📊 Database query result:', { members, membersError })
 
       if (membersError) {
-        console.log('⚠️ Could not fetch members for group:', group.id, membersError.message)
+        console.log('⚠️ Could not fetch members for group:', group?.id, membersError.message)
         // Fallback to basic current user data
         const fallbackMembers = [{
           id: 'current-user',
@@ -287,13 +288,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     return member?.user_email || 'Usuario desconocido'
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -464,6 +458,9 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           groupMembers={currentGroupMembers}
         />
       )}
+
+      {/* Loading Overlay */}
+      <LoadingOverlay isVisible={loading} />
     </div>
   )
 }

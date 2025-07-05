@@ -10,6 +10,7 @@ import ExpenseChart from './ExpenseChart'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
 import NotificationsPanel from './NotificationsPanel'
+import LoadingOverlay from './LoadingOverlay'
 import Image from 'next/image'
 
 interface Category {
@@ -150,13 +151,6 @@ export default function Dashboard() {
   
   const mostExpensiveCategory = getMostExpensiveCategory()
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
-    )
-  }
 
 
 
@@ -381,6 +375,9 @@ export default function Dashboard() {
           fetchUnreadNotificationsCount()
         }}
       />
+
+      {/* Loading Overlay */}
+      <LoadingOverlay isVisible={loading} />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import SharedExpenses from '@/components/SharedExpenses'
+import LoadingOverlay from '@/components/LoadingOverlay'
 import toast from 'react-hot-toast'
 
 interface Group {
@@ -129,13 +130,6 @@ export default function GroupExpensesPage() {
     return null
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
-    )
-  }
 
   if (!group) {
     return (
@@ -155,9 +149,12 @@ export default function GroupExpensesPage() {
   }
 
   return (
-    <SharedExpenses
-      group={group}
-      onBack={() => router.push('/groups')}
-    />
+    <div className="relative">
+      <SharedExpenses
+        group={group as Group}
+        onBack={() => router.push('/groups')}
+      />
+      <LoadingOverlay isVisible={loading} />
+    </div>
   )
 }
