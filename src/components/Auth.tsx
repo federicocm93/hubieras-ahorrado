@@ -9,6 +9,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -17,6 +18,10 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
+        if (password !== confirmPassword) {
+          toast.error('Las contraseñas no coinciden')
+          return
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -42,7 +47,13 @@ export default function Auth() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center mb-6">
-            <Image src="/logo.png" alt="Logo" width={400} height={100} className="h-[100px] w-[400px]" />
+            <Image 
+              src="/logo.png" 
+              alt="Logo" 
+              width={400} 
+              height={100} 
+              className="h-[100px] w-[400px] animate-[fadeIn_2s_ease-in-out_1] opacity-0 [animation-fill-mode:forwards]" 
+            />
           </div>
         </div>
         <form className="space-y-6 bg-white p-8 rounded-lg shadow-md" onSubmit={handleAuth}>
@@ -70,12 +81,27 @@ export default function Auth() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${!isSignUp ? 'rounded-b-md' : ''} focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+            {isSignUp && (
+              <div>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirmar contraseña"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           <div>

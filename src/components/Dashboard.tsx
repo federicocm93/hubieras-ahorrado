@@ -164,8 +164,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <Image src="/logo.png" alt="Logo" width={200} height={50} className="h-[50px] w-[200px]" />
+          <div className="flex justify-between items-center">
+            <Image src="/logo.png" alt="Logo" width={400} height={100} className="h-[100px] w-[400px]" />
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500">👋 Bienvenido, {user?.email}</span>
               <button
@@ -205,7 +205,7 @@ export default function Dashboard() {
             <div className="text-3xl font-bold text-indigo-600">
               ${totalExpenses.toFixed(2)}
             </div>
-            <p className="text-sm text-gray-500 mt-2">💰 Gastos totales</p>
+            <p className="text-sm text-gray-500 mt-2">Gastos totales</p>
             
             {mostExpensiveCategory && (
               <div className="mt-4 pt-4 border-t border-gray-200">
