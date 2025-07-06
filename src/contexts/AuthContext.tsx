@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('🔄 Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         if (session?.user) {
+          console.log('✅ Found existing session for:', session.user.email)
           setUser(session.user)
           
           // Check for pending invitations (non-blocking)
@@ -50,6 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Error checking pending invitations:', error)
           })
         } else {
+          console.log('ℹ️ No existing session found')
           setUser(null)
         }
       } catch (error) {
@@ -61,29 +64,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     getInitialSession()
-
+    
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
+        console.log('🔄 Auth state change:', event, session?.user?.email)
         
-        // Create default categories for new users and check for pending invitations
-        if (event === 'SIGNED_IN' && session?.user) {
-          try {
-            await createDefaultCategories(session.user.id)
-            checkPendingInvitationsForUser(session.user).catch(error => {
-              console.error('Error checking pending invitations:', error)
-            })
-          } catch (error) {
-            console.error('Error creating default categories:', error)
+        try {
+          setUser(session?.user ?? null)
+          // Set loading to false immediately after setting user
+          setLoading(false)
+          
+          // Create default categories for new users and check for pending invitations
+          // These operations run in the background and don't block the UI
+          if (event === 'SIGNED_IN' && session?.user) {
+            try {
+              await createDefaultCategories(session.user.id)
+              checkPendingInvitationsForUser(session.user).catch(error => {
+                console.error('Error checking pending invitations:', error)
+              })
+            } catch (error) {
+              console.error('Error creating default categories:', error)
+            }
           }
+        } catch (error) {
+          console.error('Error in auth state change:', error)
+          // Still set loading to false even if there's an error
+          setLoading(false)
         }
-        
-        setLoading(false)
       }
     )
+    
+    // Fallback timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('⚠️ Auth loading timeout - forcing loading to false')
+      setLoading(false)
+    }, 10000) // 10 seconds timeout
 
     return () => {
+      clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [])

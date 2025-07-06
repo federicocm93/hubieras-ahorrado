@@ -8,9 +8,10 @@ interface ExpensesStore {
   loading: boolean
   lastFetch: Date | null
   error: string | null
+  currentUserId: string | null
   
   // Actions
-  fetchExpenses: (forceRefresh?: boolean) => Promise<void>
+  fetchExpenses: (userId: string, forceRefresh?: boolean) => Promise<void>
   addExpense: (expense: Omit<Expense, 'id' | 'created_at' | 'categories'>) => Promise<void>
   updateExpense: (id: string, updates: Partial<Omit<Expense, 'id' | 'created_at' | 'categories'>>) => Promise<void>
   deleteExpense: (id: string) => Promise<void>
@@ -30,6 +31,7 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
   loading: false,
   lastFetch: null,
   error: null,
+  currentUserId: null,
 
   shouldRefetch: () => {
     const { lastFetch } = get()
@@ -37,8 +39,14 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
     return Date.now() - lastFetch.getTime() > CACHE_DURATION
   },
 
-  fetchExpenses: async (forceRefresh = false) => {
-    const { expenses, loading, shouldRefetch } = get()
+  fetchExpenses: async (userId: string, forceRefresh = false) => {
+    const { expenses, loading, shouldRefetch, currentUserId } = get()
+    
+    // If user changed, clear cache and force refresh
+    if (currentUserId !== userId) {
+      set({ currentUserId: userId, expenses: [], lastFetch: null })
+      forceRefresh = true
+    }
     
     // Return cached data if available and not stale
     if (!forceRefresh && expenses.length > 0 && !shouldRefetch()) {
@@ -52,8 +60,14 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
       return
     }
 
-    console.log('🔄 Fetching expenses from database')
+    console.log('🔄 Fetching expenses from database for user:', userId)
     set({ loading: true, error: null })
+
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('⚠️ Expenses fetch timeout - forcing loading to false')
+      set({ loading: false, error: 'Timeout al cargar gastos' })
+    }, 15000) // 15 seconds timeout
 
     try {
       const { data, error } = await supabase
@@ -64,8 +78,11 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
             name
           )
         `)
+        .eq('user_id', userId)
         .is('group_id', null)
         .order('date', { ascending: false })
+
+      clearTimeout(timeoutId)
 
       if (error) throw error
 
@@ -78,6 +95,7 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
       
       console.log('✅ Expenses fetched successfully:', data?.length || 0)
     } catch (error) {
+      clearTimeout(timeoutId)
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
       console.error('❌ Error fetching expenses:', errorMessage)
       set({ 

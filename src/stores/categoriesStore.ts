@@ -8,9 +8,10 @@ interface CategoriesStore {
   loading: boolean
   lastFetch: Date | null
   error: string | null
+  currentUserId: string | null
   
   // Actions
-  fetchCategories: (forceRefresh?: boolean) => Promise<void>
+  fetchCategories: (userId: string, forceRefresh?: boolean) => Promise<void>
   addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>
   deleteCategory: (id: string) => Promise<void>
   clearCategories: () => void
@@ -27,6 +28,7 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
   loading: false,
   lastFetch: null,
   error: null,
+  currentUserId: null,
 
   shouldRefetch: () => {
     const { lastFetch } = get()
@@ -34,8 +36,14 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
     return Date.now() - lastFetch.getTime() > CACHE_DURATION
   },
 
-  fetchCategories: async (forceRefresh = false) => {
-    const { categories, loading, shouldRefetch } = get()
+  fetchCategories: async (userId: string, forceRefresh = false) => {
+    const { categories, loading, shouldRefetch, currentUserId } = get()
+    
+    // If user changed, clear cache and force refresh
+    if (currentUserId !== userId) {
+      set({ currentUserId: userId, categories: [], lastFetch: null })
+      forceRefresh = true
+    }
     
     // Return cached data if available and not stale
     if (!forceRefresh && categories.length > 0 && !shouldRefetch()) {
@@ -49,14 +57,23 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
       return
     }
 
-    console.log('🔄 Fetching categories from database')
+    console.log('🔄 Fetching categories from database for user:', userId)
     set({ loading: true, error: null })
+
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('⚠️ Categories fetch timeout - forcing loading to false')
+      set({ loading: false, error: 'Timeout al cargar categorías' })
+    }, 15000) // 15 seconds timeout
 
     try {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
+        .or(`user_id.eq.${userId},is_default.eq.true`)
         .order('name')
+
+      clearTimeout(timeoutId)
 
       if (error) throw error
 
@@ -69,6 +86,7 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
       
       console.log('✅ Categories fetched successfully:', data?.length || 0)
     } catch (error) {
+      clearTimeout(timeoutId)
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
       console.error('❌ Error fetching categories:', errorMessage)
       set({ 

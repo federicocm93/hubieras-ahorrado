@@ -58,7 +58,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     if (user && group) {
       fetchGroupMembers()
       fetchSharedExpenses()
-      fetchCategories()
+      fetchCategories(user.id)
     }
   }, [user, group, fetchCategories])
 

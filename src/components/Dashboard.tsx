@@ -46,11 +46,29 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      fetchExpenses()
-      fetchCategories()
+      console.log('🔄 Dashboard: Fetching data for user:', user.email)
+      fetchExpenses(user.id)
+      fetchCategories(user.id)
       fetchUnreadNotificationsCount()
     }
   }, [user, fetchExpenses, fetchCategories])
+
+  // Fallback timeout for Dashboard loading state
+  useEffect(() => {
+    if (loading) {
+      const timeoutId = setTimeout(() => {
+        console.log('⚠️ Dashboard loading timeout - something might be stuck')
+        // Log current loading states for debugging
+        console.log('Current loading states:', { 
+          categoriesLoading, 
+          expensesLoading, 
+          user: user?.email 
+        })
+      }, 20000) // 20 seconds timeout for debugging
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [loading, categoriesLoading, expensesLoading, user])
 
 
   const fetchUnreadNotificationsCount = async () => {
@@ -294,7 +312,7 @@ export default function Dashboard() {
           onClose={() => setShowAddExpense(false)}
           onSuccess={() => {
             setShowAddExpense(false)
-            fetchExpenses()
+            if (user) fetchExpenses(user.id)
           }}
         />
       )}
@@ -306,7 +324,7 @@ export default function Dashboard() {
           onClose={() => setEditingExpense(null)}
           onSuccess={() => {
             setEditingExpense(null)
-            fetchExpenses()
+            if (user) fetchExpenses(user.id)
           }}
         />
       )}
@@ -316,7 +334,7 @@ export default function Dashboard() {
           onClose={() => setShowAddCategory(false)}
           onSuccess={() => {
             setShowAddCategory(false)
-            fetchCategories()
+            if (user) fetchCategories(user.id)
           }}
         />
       )}
