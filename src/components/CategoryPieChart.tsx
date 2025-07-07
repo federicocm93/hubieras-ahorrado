@@ -1,7 +1,7 @@
 'use client'
 
 import { Pie } from 'react-chartjs-2'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, TooltipItem } from 'chart.js'
 import { Expense } from '@/stores/types'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -98,7 +98,7 @@ export default function CategoryPieChart({ expenses, month, year }: CategoryPieC
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: TooltipItem<'pie'>) {
             const label = context.label || ''
             const value = context.parsed || 0
             const total = amounts.reduce((sum, amount) => sum + amount, 0)
