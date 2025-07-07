@@ -21,6 +21,7 @@ interface ExpensesStore {
   getExpenseById: (id: string) => Expense | undefined
   getExpensesByCategory: (categoryId: string) => Expense[]
   getTotalExpensesByDate: (month: number, year: number) => number
+  getMostExpensiveCategoryByDate: (month: number, year: number) => { category: string; amount: number } | null
   shouldRefetch: () => boolean
 }
 
@@ -218,6 +219,27 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
       }
       return sum
     }, 0)
+  },
+
+  getMostExpensiveCategoryByDate: (month: number, year: number) => {
+    const filteredExpenses = get().expenses.filter(expense => {
+      const expenseDate = new Date(expense.date)
+      return expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+    })
+
+    if (filteredExpenses.length === 0) return null
+
+    const categoryTotals = filteredExpenses.reduce((acc, expense) => {
+      const categoryName = expense.categories.name
+      acc[categoryName] = (acc[categoryName] || 0) + expense.amount
+      return acc
+    }, {} as Record<string, number>)
+
+    const mostExpensiveCategory = Object.entries(categoryTotals).reduce((max, [category, amount]) => {
+      return amount > max.amount ? { category, amount } : max
+    }, { category: '', amount: 0 })
+
+    return mostExpensiveCategory.amount > 0 ? mostExpensiveCategory : null
   },
 
   clearExpenses: () => {

@@ -31,7 +31,8 @@ export default function Dashboard() {
     loading: expensesLoading, 
     fetchExpenses, 
     deleteExpense: deleteExpenseFromStore,
-    getTotalExpensesByDate 
+    getTotalExpensesByDate,
+    getMostExpensiveCategoryByDate 
   } = useExpensesStore()
   
   // Local state
@@ -105,23 +106,8 @@ export default function Dashboard() {
 
   const currentMonthExpenses = getTotalExpensesByDate(new Date().getMonth(), new Date().getFullYear())
   const currentDate = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
-  const getMostExpensiveCategory = () => {
-    const categoryTotals = expenses.reduce((acc, expense) => {
-      const categoryName = expense.categories.name
-      acc[categoryName] = (acc[categoryName] || 0) + expense.amount
-      return acc
-    }, {} as Record<string, number>)
-    
-    if (Object.keys(categoryTotals).length === 0) return null
-    
-    const maxCategory = Object.entries(categoryTotals).reduce((max, [category, amount]) => 
-      amount > max.amount ? { category, amount } : max
-    , { category: '', amount: 0 })
-    
-    return maxCategory
-  }
   
-  const mostExpensiveCategory = getMostExpensiveCategory()
+  const currentMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(new Date().getMonth(), new Date().getFullYear())
 
 
 
@@ -173,12 +159,12 @@ export default function Dashboard() {
             </div>
             <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
             
-            {mostExpensiveCategory && (
+            {currentMonthMostExpensiveCategory && (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
                 <div className="flex justify-between items-center mt-1">
-                  <span className="text-lg font-semibold text-gray-900">{mostExpensiveCategory.category}</span>
-                  <span className="text-lg font-bold text-red-600">${mostExpensiveCategory.amount.toFixed(2)}</span>
+                  <span className="text-lg font-semibold text-gray-900">{currentMonthMostExpensiveCategory.category}</span>
+                  <span className="text-lg font-bold text-red-600">${currentMonthMostExpensiveCategory.amount.toFixed(2)}</span>
                 </div>
               </div>
             )}
