@@ -31,7 +31,7 @@ export default function Dashboard() {
     loading: expensesLoading, 
     fetchExpenses, 
     deleteExpense: deleteExpenseFromStore,
-    getTotalExpenses 
+    getTotalExpensesByDate 
   } = useExpensesStore()
   
   // Local state
@@ -103,8 +103,8 @@ export default function Dashboard() {
     }
   }
 
-  const totalExpenses = getTotalExpenses()
-  
+  const currentMonthExpenses = getTotalExpensesByDate(new Date().getMonth(), new Date().getFullYear())
+  const currentDate = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
   const getMostExpensiveCategory = () => {
     const categoryTotals = expenses.reduce((acc, expense) => {
       const categoryName = expense.categories.name
@@ -167,11 +167,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Summary Card */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Resumen</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Resumen mensual</h2>
             <div className="text-3xl font-bold text-indigo-600">
-              ${totalExpenses.toFixed(2)}
+              ${currentMonthExpenses.toFixed(2)}
             </div>
-            <p className="text-sm text-gray-500 mt-2">Gastos totales</p>
+            <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
             
             {mostExpensiveCategory && (
               <div className="mt-4 pt-4 border-t border-gray-200">

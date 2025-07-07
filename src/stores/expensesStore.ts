@@ -20,7 +20,7 @@ interface ExpensesStore {
   // Helpers
   getExpenseById: (id: string) => Expense | undefined
   getExpensesByCategory: (categoryId: string) => Expense[]
-  getTotalExpenses: () => number
+  getTotalExpensesByDate: (month: number, year: number) => number
   shouldRefetch: () => boolean
 }
 
@@ -210,8 +210,14 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
     return get().expenses.filter(e => e.category_id === categoryId)
   },
 
-  getTotalExpenses: () => {
-    return get().expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  getTotalExpensesByDate: (month: number, year: number) => {
+    return get().expenses.reduce((sum, expense) => {
+      const expenseDate = new Date(expense.date)
+      if (expenseDate.getMonth() === month && expenseDate.getFullYear() === year) {
+        return sum + expense.amount
+      }
+      return sum
+    }, 0)
   },
 
   clearExpenses: () => {
