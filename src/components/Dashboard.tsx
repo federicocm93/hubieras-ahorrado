@@ -10,6 +10,7 @@ import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
 import NotificationsPanel from './NotificationsPanel'
 import LoadingOverlay from './LoadingOverlay'
+import CategoryPieChart from './CategoryPieChart'
 import Image from 'next/image'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { useExpensesStore } from '@/stores/expensesStore'
@@ -168,27 +169,37 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+            
+            {/* Quick Actions moved from middle section */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">⚡ Acciones Rápidas</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowAddExpense(true)}
+                  className="w-full flex items-center justify-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>💸 Agregar Gasto</span>
+                </button>
+                <button
+                  onClick={() => setShowAddCategory(true)}
+                  className="w-full flex items-center justify-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>📝 Agregar Categoría</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Quick Actions */}
+          {/* Category Distribution Chart */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">⚡ Acciones Rápidas</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => setShowAddExpense(true)}
-                className="w-full flex items-center justify-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-              >
-                <Plus className="h-4 w-4" />
-                <span>💸 Agregar Gasto</span>
-              </button>
-              <button
-                onClick={() => setShowAddCategory(true)}
-                className="w-full flex items-center justify-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
-              >
-                <Plus className="h-4 w-4" />
-                <span>📝 Agregar Categoría</span>
-              </button>
-            </div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Distribución por Categoría</h2>
+            <CategoryPieChart 
+              expenses={expenses} 
+              month={new Date().getMonth()} 
+              year={new Date().getFullYear()} 
+            />
           </div>
 
           {/* Chart */}
