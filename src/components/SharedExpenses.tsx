@@ -56,136 +56,49 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
   useEffect(() => {
     if (user && group) {
-      fetchGroupMembers()
-      fetchSharedExpenses()
+      fetchSharedExpensesData()
       fetchCategories(user.id)
     }
   }, [user, group, fetchCategories])
 
-  useEffect(() => {
-    calculateBalances()
-  }, [expenses, currentGroupMembers])
 
-  const fetchGroupMembers = async () => {
+  const fetchSharedExpensesData = async () => {
     if (!user) return
 
+    setLoading(true)
     try {
-      console.log('🔍 Fetching group members for group:', group?.id)
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) {
+        throw new Error('No active session')
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-shared-expenses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({ group_id: group.id }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
       
-      // Use the passed group.members as primary source
-      if (group?.members && group?.members.length > 0) {
-        console.log('✅ Using group members from props:', group?.members)
-        setCurrentGroupMembers(group?.members)
-        return
+      if (data.error) {
+        throw new Error(data.error)
       }
 
-      // Fallback: try to fetch from database
-      const { data: members, error: membersError } = await supabase
-        .from('group_members')
-        .select('id, user_id, joined_at')
-        .eq('group_id', group?.id)
-
-      console.log('📊 Database query result:', { members, membersError })
-
-      if (membersError) {
-        console.log('⚠️ Could not fetch members for group:', group?.id, membersError.message)
-        // Fallback to basic current user data
-        const fallbackMembers = [{
-          id: 'current-user',
-          user_id: user.id,
-          user_email: user.email,
-          joined_at: new Date().toISOString()
-        }]
-        setCurrentGroupMembers(fallbackMembers)
-        return
-      }
-
-      // Map member data with emails (will get real emails from group.member_emails)
-      const membersWithEmails = (members || []).map((member) => ({
-        ...member,
-        user_email: member.user_id === user.id ? user.email : 'Email no disponible'
-      }))
-
-      console.log('✅ Successfully fetched group members:', membersWithEmails)
-      setCurrentGroupMembers(membersWithEmails)
-    } catch (error) {
-      console.log('⚠️ Error fetching group members:', error)
-      // Fallback to current user only
-      const fallbackMembers = [{
-        id: 'current-user',
-        user_id: user.id,
-        user_email: user.email,
-        joined_at: new Date().toISOString()
-      }]
-      setCurrentGroupMembers(fallbackMembers)
-    }
-  }
-
-  const fetchSharedExpenses = async () => {
-    if (!user) return
-
-    console.log('🔍 Fetching shared expenses for group:', group.id)
-    console.log('👥 Group members:', currentGroupMembers)
-
-    try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select(`
-          *,
-          category:categories(id, name)
-        `)
-        .eq('group_id', group.id)
-        .order('date', { ascending: false })
-
-      console.log('📊 Expenses query result:', { data, error })
-
-      if (error) {
-        console.error('❌ Database error:', error)
-        throw error
-      }
-
-      if (!data) {
-        console.log('✅ No expenses found')
-        setExpenses([])
-        return
-      }
-
-      console.log('💰 Raw expenses data:', data)
-
-      // Get user emails for paid_by field
-      const expensesWithEmails = await Promise.all(
-        data.map(async (expense) => {
-          console.log('Processing expense:', expense)
-          
-          // Try to get user email from the database
-          let userEmail = 'Usuario desconocido'
-          
-          // Use current user's email if it's the current user, otherwise fallback
-          if (expense.paid_by === user.id) {
-            userEmail = user.email || 'Usuario desconocido'
-          } else {
-            // Try to get email from group members data
-            const member = currentGroupMembers.find(m => m.user_id === expense.paid_by)
-            userEmail = member?.user_email || 'Usuario desconocido'
-          }
-          
-          const processedExpense = {
-            ...expense,
-            paid_by_email: userEmail,
-            category: expense.category || { id: '', name: 'Sin categoría' }
-          }
-          
-          console.log('Processed expense:', processedExpense)
-          return processedExpense
-        })
-      )
-
-      console.log('✅ Final expenses with emails:', expensesWithEmails)
-      setExpenses(expensesWithEmails)
+      setCurrentGroupMembers(data.members || [])
+      setExpenses(data.expenses || [])
+      setBalances(data.balances || {})
+      
+      console.log('📊 Shared expenses data fetched via edge function:', data)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ Error fetching shared expenses:', errorMessage)
-      console.error('Full error object:', error)
+      console.error('Error fetching shared expenses:', errorMessage)
       toast.error('Error al cargar gastos compartidos: ' + errorMessage)
     } finally {
       setLoading(false)
@@ -193,37 +106,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   }
 
 
-  const calculateBalances = () => {
-    console.log('💰 Calculating balances for members:', currentGroupMembers)
-    console.log('💰 With expenses:', expenses)
-    
-    const memberBalances: Record<string, number> = {}
-    
-    // Initialize balances for all members
-    currentGroupMembers.forEach(member => {
-      memberBalances[member.user_id] = 0
-    })
-
-    console.log('💰 Initialized balances:', memberBalances)
-
-    // Calculate what each person paid vs what they owe
-    expenses.forEach(expense => {
-      const amountPerPerson = expense.amount / currentGroupMembers.length
-      
-      // Person who paid gets credit
-      memberBalances[expense.paid_by] += expense.amount - amountPerPerson
-      
-      // Everyone else owes their share
-      currentGroupMembers.forEach(member => {
-        if (member.user_id !== expense.paid_by) {
-          memberBalances[member.user_id] -= amountPerPerson
-        }
-      })
-    })
-
-    console.log('💰 Final calculated balances:', memberBalances)
-    setBalances(memberBalances)
-  }
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (!user) return
@@ -410,7 +292,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           onClose={() => setShowAddExpense(false)}
           onSuccess={() => {
             setShowAddExpense(false)
-            fetchSharedExpenses()
+            fetchSharedExpensesData()
           }}
           groupId={group.id}
           groupMembers={currentGroupMembers}
@@ -436,7 +318,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           onClose={() => setEditingExpense(null)}
           onSuccess={() => {
             setEditingExpense(null)
-            fetchSharedExpenses()
+            fetchSharedExpensesData()
           }}
           groupId={group.id}
           groupMembers={currentGroupMembers}

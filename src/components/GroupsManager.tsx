@@ -64,136 +64,33 @@ export default function GroupsManager() {
 
     setLoading(true)
     try {
-      // Step 1: Get groups where user is a member (only get the group IDs)
-      const { data: membershipData, error: memberError } = await supabase
-        .from('group_members')
-        .select('group_id')
-        .eq('user_id', user.id)
-
-      if (memberError) throw memberError
-
-      // Step 2: Get groups where user is the creator (these are allowed by the simple RLS policy)
-      const { data: createdGroups, error: createdError } = await supabase
-        .from('groups')
-        .select('id, name, created_by, created_at')
-        .eq('created_by', user.id)
-
-      if (createdError) throw createdError
-
-      // Step 3: Get group details for groups where user is a member
-      const membershipGroupIds = (membershipData || []).map(m => m.group_id)
-      console.log('🔍 User is member of groups:', membershipGroupIds)
-
-      // Try to fetch groups where user is a member directly
-      let memberGroups: Array<{
-        id: string
-        name: string
-        created_by: string
-        created_at: string
-      }> = []
-      if (membershipGroupIds.length > 0) {
-        try {
-          const { data: memberGroupsData, error: memberGroupsError } = await supabase
-            .from('groups')
-            .select('id, name, created_by, created_at')
-            .in('id', membershipGroupIds)
-
-          if (memberGroupsError) {
-            console.log('⚠️ Could not fetch member groups due to RLS:', memberGroupsError.message)
-          } else {
-            memberGroups = memberGroupsData || []
-            console.log('✅ Successfully fetched member groups:', memberGroups)
-          }
-        } catch (error) {
-          console.log('⚠️ Error fetching member groups:', error)
-        }
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) {
+        throw new Error('No active session')
       }
 
-      // Step 4: Get pending invitations (these will show groups user can potentially join)
-      const { data: invitations, error: invitationsError } = await supabase
-        .from('group_invitations')
-        .select('id, group_id, invited_by, invited_email, status, created_at')
-        .eq('invited_email', user.email)
-        .eq('status', 'pending')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-user-groups`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+      })
 
-      if (invitationsError) throw invitationsError
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-      // Step 5: For each invitation, we need to get the group name
-      // We'll do this by creating a simple query that doesn't use joins
-      const invitationsWithGroups = await Promise.all(
-        (invitations || []).map(async (invitation) => {
-          // Try to get group details - this might fail due to RLS, so we'll handle it gracefully
-          try {
-            const { data: groupData } = await supabase
-              .from('groups')
-              .select('id, name, created_by, created_at')
-              .eq('id', invitation.group_id)
-              .single()
-
-            return {
-              ...invitation,
-              groups: groupData ? [groupData] : []
-            }
-          } catch {
-            console.log('Could not fetch group details for invitation:', invitation.group_id)
-            return {
-              ...invitation,
-              groups: []
-            }
-          }
-        })
-      )
-
-      setPendingInvitations(invitationsWithGroups)
-
-      // Step 6: Combine created groups and member groups
-      const allGroups = [...(createdGroups || []), ...memberGroups]
+      const data = await response.json()
       
-      // Remove duplicates (in case user is both creator and member)
-      const uniqueGroups = allGroups.filter((group, index, self) => 
-        index === self.findIndex((g) => g.id === group.id)
-      )
+      if (data.error) {
+        throw new Error(data.error)
+      }
 
-      // Step 7: Get all members for each group with their emails
-      const groupsWithMembers = await Promise.all(
-        uniqueGroups.map(async (group) => {
-          try {
-            // Get basic member info
-            const { data: members, error: membersError } = await supabase
-              .from('group_members')
-              .select('id, user_id, joined_at')
-              .eq('group_id', group.id)
-
-            if (membersError) {
-              console.log('⚠️ Could not fetch members for group:', group.id, membersError.message)
-              return {
-                ...group,
-                members: []
-              }
-            }
-
-            // Get emails for each member (will use real emails from group.member_emails)
-            const membersWithEmails = (members || []).map((member) => ({
-              ...member,
-              user_email: member.user_id === user.id ? user.email : 'Email no disponible'
-            }))
-
-            return {
-              ...group,
-              members: membersWithEmails
-            }
-          } catch (error) {
-            console.log('⚠️ Error fetching members for group:', group.id, error)
-            return {
-              ...group,
-              members: []
-            }
-          }
-        })
-      )
-
-      console.log('📊 Final groups to display:', groupsWithMembers)
-      setGroups(groupsWithMembers)
+      setGroups(data.groups || [])
+      setPendingInvitations(data.pendingInvitations || [])
+      
+      console.log('📊 Groups fetched via edge function:', data.groups)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
       console.error('Error fetching groups:', errorMessage)

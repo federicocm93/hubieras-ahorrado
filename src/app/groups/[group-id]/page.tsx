@@ -40,82 +40,38 @@ export default function GroupExpensesPage() {
 
   const fetchGroup = async () => {
     try {
-      // Step 1: Check if user is a member of this group
-      const { data: membershipData, error: memberError } = await supabase
-        .from('group_members')
-        .select('group_id')
-        .eq('group_id', groupId)
-        .eq('user_id', user?.id)
-        .single()
-
-      if (memberError && memberError.code !== 'PGRST116') {
-        throw memberError
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) {
+        throw new Error('No active session')
       }
 
-      // Step 2: Check if user is the creator of this group
-      const { data: creatorData, error: creatorError } = await supabase
-        .from('groups')
-        .select('id, name, created_by, created_at')
-        .eq('id', groupId)
-        .eq('created_by', user?.id)
-        .single()
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-group-details`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({ group_id: groupId }),
+      })
 
-      if (creatorError && creatorError.code !== 'PGRST116') {
-        // If it's not a "not found" error, throw it
-        if (creatorError.code !== 'PGRST116') {
-          throw creatorError
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      // Step 3: If user is neither member nor creator, deny access
-      if (!membershipData && !creatorData) {
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      if (!data.hasAccess) {
         toast.error('No tienes acceso a este grupo')
         router.push('/groups')
         return
       }
 
-      // Step 4: Get group details (use creator data if available, otherwise fetch)
-      let groupData = creatorData
-      if (!groupData) {
-        const { data: groupInfo, error: groupError } = await supabase
-          .from('groups')
-          .select('id, name, created_by, created_at')
-          .eq('id', groupId)
-          .single()
-
-        if (groupError) throw groupError
-        groupData = groupInfo
-      }
-
-      // Step 5: Get all group members with their emails
-      const { data: membersWithEmails, error: membersError } = await supabase
-        .rpc('get_group_members_with_emails', { group_id_param: groupId })
-
-      if (membersError) {
-        console.log('⚠️ Could not fetch members with emails:', membersError.message)
-        // Fallback to basic member info
-        const { data: basicMembers, error: basicError } = await supabase
-          .from('group_members')
-          .select('id, user_id, joined_at')
-          .eq('group_id', groupId)
-
-        if (basicError) throw basicError
-
-        const membersWithFallbackEmails = (basicMembers || []).map((member) => ({
-          ...member,
-          user_email: member.user_id === user?.id ? user?.email : 'Email no disponible'
-        }))
-
-        setGroup({
-          ...groupData,
-          members: membersWithFallbackEmails
-        })
-      } else {
-        setGroup({
-          ...groupData,
-          members: membersWithEmails || []
-        })
-      }
+      setGroup(data.group)
+      console.log('📊 Group details fetched via edge function:', data.group)
     } catch (error) {
       console.error('Error fetching group:', error)
       toast.error('Error al cargar el grupo')

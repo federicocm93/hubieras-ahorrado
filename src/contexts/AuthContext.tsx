@@ -97,9 +97,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     // Fallback timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      console.log('⚠️ Auth loading timeout - forcing loading to false')
-      setLoading(false)
-    }, 10000) // 10 seconds timeout
+      if (loading) {
+        console.log('⚠️ Auth loading timeout - forcing loading to false')
+        setLoading(false)
+      }
+    }, 5000) // 5 seconds timeout
 
     return () => {
       clearTimeout(timeoutId)
