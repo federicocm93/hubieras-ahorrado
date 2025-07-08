@@ -47,7 +47,7 @@ export default function GroupsManager() {
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
-  const { prefetchGroupDetails, prefetchSharedExpenses } = usePrefetch()
+  const { prefetchGroupDetails, prefetchSharedExpenses, prefetchDashboardData } = usePrefetch()
 
   useEffect(() => {
     if (user) {
@@ -206,6 +206,7 @@ export default function GroupsManager() {
               <div className="flex space-x-3">
                 <button
                   onClick={() => router.push('/dashboard')}
+                  onMouseEnter={() => prefetchDashboardData()}
                   className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Volver a Gastos Personales

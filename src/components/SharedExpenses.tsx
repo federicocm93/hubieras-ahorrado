@@ -8,6 +8,7 @@ import AddExpenseModal from './AddExpenseModal'
 import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
 import { useCategoriesStore } from '@/stores/categoriesStore'
+import { usePrefetch } from '@/hooks/usePrefetch'
 
 interface Group {
   id: string
@@ -54,6 +55,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>([])
   const initialFetchDone = useRef(false)
   const currentGroupId = useRef<string | null>(null)
+  const { prefetchGroups } = usePrefetch()
 
   const fetchSharedExpensesData = useCallback(async () => {
     if (!user) return
@@ -163,7 +165,9 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
               <div className="flex items-center">
                 <button
                   onClick={onBack}
+                  onMouseEnter={() => prefetchGroups()}
                   className="mr-4 text-gray-500 hover:text-gray-700"
+                  title="Volver a Mis Grupos"
                 >
                   <ArrowLeft className="h-6 w-6" />
                 </button>

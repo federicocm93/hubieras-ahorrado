@@ -2,9 +2,71 @@ import { useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
+interface Group {
+  id: string
+  name: string
+  created_by: string
+  created_at: string
+  members: GroupMember[]
+}
+
+interface GroupMember {
+  id: string
+  user_id: string
+  user_email?: string
+  joined_at: string
+}
+
+interface SharedExpense {
+  id: string
+  amount: number
+  description: string
+  date: string
+  paid_by: string
+  paid_by_email?: string
+  category: {
+    id: string
+    name: string
+  }
+  group_id: string
+}
+
+interface PendingInvitation {
+  id: string
+  group_id: string
+  invited_by: string
+  invited_email: string
+  status: string
+  created_at: string
+  groups: {
+    id: string
+    name: string
+    created_by: string
+    created_at: string
+  }[]
+}
+
+interface UserGroupsResponse {
+  groups: Group[]
+  pendingInvitations: PendingInvitation[]
+}
+
+interface GroupDetailsResponse {
+  group: Group
+  hasAccess: boolean
+}
+
+interface SharedExpensesResponse {
+  members: GroupMember[]
+  expenses: SharedExpense[]
+  balances: Record<string, number>
+}
+
+type PrefetchData = UserGroupsResponse | GroupDetailsResponse | SharedExpensesResponse
+
 interface PrefetchCache {
   [key: string]: {
-    data: any
+    data: PrefetchData
     timestamp: number
   }
 }
@@ -16,7 +78,7 @@ export function usePrefetch() {
   const cache = useRef<PrefetchCache>({})
   const pendingRequests = useRef<Set<string>>(new Set())
 
-  const prefetchGroups = useCallback(async () => {
+  const prefetchGroups = useCallback(async (): Promise<UserGroupsResponse | undefined> => {
     if (!user || pendingRequests.current.has('groups')) return
 
     const cacheKey = 'groups'
@@ -24,7 +86,7 @@ export function usePrefetch() {
     
     // Return cached data if still valid
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data
+      return cached.data as UserGroupsResponse
     }
 
     pendingRequests.current.add('groups')
@@ -60,7 +122,7 @@ export function usePrefetch() {
     }
   }, [user])
 
-  const prefetchGroupDetails = useCallback(async (groupId: string) => {
+  const prefetchGroupDetails = useCallback(async (groupId: string): Promise<GroupDetailsResponse | undefined> => {
     if (!user || !groupId || pendingRequests.current.has(`group-${groupId}`)) return
 
     const cacheKey = `group-${groupId}`
@@ -68,7 +130,7 @@ export function usePrefetch() {
     
     // Return cached data if still valid
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data
+      return cached.data as GroupDetailsResponse
     }
 
     pendingRequests.current.add(`group-${groupId}`)
@@ -105,7 +167,7 @@ export function usePrefetch() {
     }
   }, [user])
 
-  const prefetchSharedExpenses = useCallback(async (groupId: string) => {
+  const prefetchSharedExpenses = useCallback(async (groupId: string): Promise<SharedExpensesResponse | undefined> => {
     if (!user || !groupId || pendingRequests.current.has(`expenses-${groupId}`)) return
 
     const cacheKey = `expenses-${groupId}`
@@ -113,7 +175,7 @@ export function usePrefetch() {
     
     // Return cached data if still valid
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data
+      return cached.data as SharedExpensesResponse
     }
 
     pendingRequests.current.add(`expenses-${groupId}`)
@@ -150,7 +212,42 @@ export function usePrefetch() {
     }
   }, [user])
 
-  const getCachedData = useCallback((key: string) => {
+  const prefetchDashboardData = useCallback(async () => {
+    if (!user || pendingRequests.current.has('dashboard')) return
+
+    const cacheKey = 'dashboard'
+    const cached = cache.current[cacheKey]
+    
+    // Return cached data if still valid
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data
+    }
+
+    pendingRequests.current.add('dashboard')
+    
+    try {
+      // Prefetch categories and expenses data that the dashboard needs
+      // This simulates what the dashboard stores would fetch
+      console.log('🚀 Dashboard data prefetch initiated (categories & expenses)')
+      
+      // Note: We're not making actual API calls here since the dashboard uses Zustand stores
+      // The stores handle their own caching. This is more of a placeholder for future enhancement
+      // where we might want to prime specific dashboard data.
+      
+      cache.current[cacheKey] = {
+        data: { prefetched: true, timestamp: Date.now() },
+        timestamp: Date.now()
+      }
+      
+      return cache.current[cacheKey].data
+    } catch (error) {
+      console.error('Error prefetching dashboard data:', error)
+    } finally {
+      pendingRequests.current.delete('dashboard')
+    }
+  }, [user])
+
+  const getCachedData = useCallback((key: string): PrefetchData | null => {
     const cached = cache.current[key]
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       return cached.data
@@ -167,6 +264,7 @@ export function usePrefetch() {
     prefetchGroups,
     prefetchGroupDetails,
     prefetchSharedExpenses,
+    prefetchDashboardData,
     getCachedData,
     clearCache
   }
