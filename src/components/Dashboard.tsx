@@ -15,6 +15,7 @@ import Image from 'next/image'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { useExpensesStore } from '@/stores/expensesStore'
 import { Expense } from '@/stores/types'
+import { usePrefetch } from '@/hooks/usePrefetch'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
@@ -42,6 +43,9 @@ export default function Dashboard() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showNotifications, setShowNotifications] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  
+  // Prefetch hook
+  const { prefetchGroups } = usePrefetch()
   
   // Combined loading state
   const loading = categoriesLoading || expensesLoading
@@ -134,7 +138,9 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => router.push('/groups')}
+                onMouseEnter={() => prefetchGroups()}
                 className="text-gray-500 hover:text-gray-700"
+                title="Mis Grupos"
               >
                 <Users className="h-6 w-6" />
               </button>

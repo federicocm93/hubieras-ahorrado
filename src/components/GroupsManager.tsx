@@ -8,6 +8,7 @@ import { Users, Plus, Trash2, Calendar } from 'lucide-react'
 import CreateGroupModal from './CreateGroupModal'
 import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
+import { usePrefetch } from '@/hooks/usePrefetch'
 
 interface Group {
   id: string
@@ -46,6 +47,7 @@ export default function GroupsManager() {
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
+  const { prefetchGroupDetails, prefetchSharedExpenses } = usePrefetch()
 
   useEffect(() => {
     if (user) {
@@ -306,6 +308,10 @@ export default function GroupsManager() {
                     key={group.id}
                     className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => router.push(`/groups/${group.id}`)}
+                    onMouseEnter={() => {
+                      prefetchGroupDetails(group.id)
+                      prefetchSharedExpenses(group.id)
+                    }}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
