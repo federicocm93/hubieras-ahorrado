@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft } from 'lucide-react'
@@ -14,7 +14,6 @@ interface Group {
   name: string
   created_by: string
   created_at: string
-  members: GroupMember[]
 }
 
 interface GroupMember {
@@ -53,16 +52,10 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const [editingExpense, setEditingExpense] = useState<SharedExpense | null>(null)
   const [balances, setBalances] = useState<Record<string, number>>({})
   const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>([])
+  const initialFetchDone = useRef(false)
+  const currentGroupId = useRef<string | null>(null)
 
-  useEffect(() => {
-    if (user && group) {
-      fetchSharedExpensesData()
-      fetchCategories(user.id)
-    }
-  }, [user, group, fetchCategories])
-
-
-  const fetchSharedExpensesData = async () => {
+  const fetchSharedExpensesData = useCallback(async () => {
     if (!user) return
 
     setLoading(true)
@@ -103,9 +96,19 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user, group.id])
 
-
+  useEffect(() => {
+    if (user && group) {
+      // Only fetch if this is a new group or we haven't fetched yet
+      if (!initialFetchDone.current || currentGroupId.current !== group.id) {
+        initialFetchDone.current = true
+        currentGroupId.current = group.id
+        fetchSharedExpensesData()
+        fetchCategories(user.id)
+      }
+    }
+  }, [user, group, fetchSharedExpensesData, fetchCategories])
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (!user) return

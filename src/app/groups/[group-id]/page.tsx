@@ -13,14 +13,6 @@ interface Group {
   name: string
   created_by: string
   created_at: string
-  members: GroupMember[]
-}
-
-interface GroupMember {
-  id: string
-  user_id: string
-  user_email?: string
-  joined_at: string
 }
 
 export default function GroupExpensesPage() {
@@ -33,10 +25,15 @@ export default function GroupExpensesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!user) {
+      router.push('/')
+      return
+    }
+    
     if (user && groupId) {
       fetchGroup()
     }
-  }, [user, groupId])
+  }, [user, groupId, router])
 
   const fetchGroup = async () => {
     try {
@@ -82,7 +79,6 @@ export default function GroupExpensesPage() {
   }
 
   if (!user) {
-    router.push('/')
     return null
   }
 
