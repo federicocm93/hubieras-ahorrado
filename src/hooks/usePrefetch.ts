@@ -62,7 +62,12 @@ interface SharedExpensesResponse {
   balances: Record<string, number>
 }
 
-type PrefetchData = UserGroupsResponse | GroupDetailsResponse | SharedExpensesResponse
+interface DashboardResponse {
+  prefetched: boolean
+  timestamp: number
+}
+
+type PrefetchData = UserGroupsResponse | GroupDetailsResponse | SharedExpensesResponse | DashboardResponse
 
 interface PrefetchCache {
   [key: string]: {
@@ -212,7 +217,7 @@ export function usePrefetch() {
     }
   }, [user])
 
-  const prefetchDashboardData = useCallback(async () => {
+  const prefetchDashboardData = useCallback(async (): Promise<DashboardResponse | undefined> => {
     if (!user || pendingRequests.current.has('dashboard')) return
 
     const cacheKey = 'dashboard'
@@ -220,7 +225,7 @@ export function usePrefetch() {
     
     // Return cached data if still valid
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data
+      return cached.data as DashboardResponse
     }
 
     pendingRequests.current.add('dashboard')
@@ -234,12 +239,17 @@ export function usePrefetch() {
       // The stores handle their own caching. This is more of a placeholder for future enhancement
       // where we might want to prime specific dashboard data.
       
+      const dashboardData: DashboardResponse = { 
+        prefetched: true, 
+        timestamp: Date.now() 
+      }
+      
       cache.current[cacheKey] = {
-        data: { prefetched: true, timestamp: Date.now() },
+        data: dashboardData,
         timestamp: Date.now()
       }
       
-      return cache.current[cacheKey].data
+      return dashboardData
     } catch (error) {
       console.error('Error prefetching dashboard data:', error)
     } finally {
