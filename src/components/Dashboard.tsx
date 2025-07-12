@@ -162,7 +162,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Resumen mensual</h2>
             <div className="text-3xl font-bold text-indigo-600">
-              ${currentMonthExpenses.toFixed(2)}
+              {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(currentMonthExpenses)}
             </div>
             <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
             
@@ -171,7 +171,7 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-lg font-semibold text-gray-900">{currentMonthMostExpensiveCategory.category}</span>
-                  <span className="text-lg font-bold text-red-600">${currentMonthMostExpensiveCategory.amount.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-red-600">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(currentMonthMostExpensiveCategory.amount)}</span>
                 </div>
               </div>
             )}
@@ -258,7 +258,7 @@ export default function Dashboard() {
                       {expense.categories.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${expense.amount.toFixed(2)}
+                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(expense.amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex space-x-2">

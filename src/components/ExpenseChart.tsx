@@ -89,7 +89,7 @@ export default function ExpenseChart({ expenses }: ExpenseChartProps) {
         beginAtZero: true,
         ticks: {
           callback: function(value: string | number) {
-            return '$' + Number(value).toFixed(0)
+            return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(value))
           }
         }
       },

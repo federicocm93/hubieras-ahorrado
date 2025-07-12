@@ -138,7 +138,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'USD'
     }).format(amount)

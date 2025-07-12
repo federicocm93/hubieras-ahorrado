@@ -103,7 +103,7 @@ export default function CategoryPieChart({ expenses, month, year }: CategoryPieC
             const value = context.parsed || 0
             const total = amounts.reduce((sum, amount) => sum + amount, 0)
             const percentage = ((value / total) * 100).toFixed(1)
-            return `${label}: $${value.toFixed(2)} (${percentage}%)`
+            return `${label}: ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value)} (${percentage}%)`
           }
         }
       }

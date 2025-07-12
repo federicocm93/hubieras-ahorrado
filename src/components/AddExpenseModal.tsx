@@ -32,7 +32,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
 
   useEffect(() => {
     if (expense) {
-      setAmount(expense.amount.toString())
+      setAmount(expense.amount.toString().replace('.', ','))
       setDescription(expense.description)
       setCategoryId(expense.category_id)
       setDate(expense.date)
@@ -51,7 +51,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
 
     try {
       const expenseData = {
-        amount: parseFloat(amount),
+        amount: parseFloat(amount.replace(',', '.')),
         description,
         category_id: categoryId,
         user_id: user.id,
@@ -113,15 +113,20 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
 
         <form onSubmit={handleSubmit} className="p-3 space-y-4">
           <div>
+            <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+              Monto
+            </label>
             <input
-              type="number"
+              type="text"
               id="amount"
-              step="0.01"
-              min="0"
               required
+              placeholder="0,00"
               className="mt-1 block w-full h-10 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d,]/g, '')
+                setAmount(value)
+              }}
             />
           </div>
 
