@@ -10,6 +10,7 @@ interface CategoryPieChartProps {
   expenses: Expense[]
   month: number
   year: number
+  currency?: string
 }
 
 const generateColors = (count: number): string[] => {
@@ -40,10 +41,12 @@ const generateColors = (count: number): string[] => {
   return [...colors, ...additionalColors]
 }
 
-export default function CategoryPieChart({ expenses, month, year }: CategoryPieChartProps) {
+export default function CategoryPieChart({ expenses, month, year, currency }: CategoryPieChartProps) {
   const filteredExpenses = expenses.filter(expense => {
     const expenseDate = new Date(expense.date)
-    return expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+    const dateMatches = expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+    const currencyMatches = !currency || expense.currency === currency
+    return dateMatches && currencyMatches
   })
 
   if (filteredExpenses.length === 0) {
@@ -103,7 +106,7 @@ export default function CategoryPieChart({ expenses, month, year }: CategoryPieC
             const value = context.parsed || 0
             const total = amounts.reduce((sum, amount) => sum + amount, 0)
             const percentage = ((value / total) * 100).toFixed(1)
-            return `${label}: ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value)} (${percentage}%)`
+            return `${label}: ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'USD' }).format(value)} (${percentage}%)`
           }
         }
       }

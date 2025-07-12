@@ -82,34 +82,42 @@ export default function GroupExpensesPage() {
     return null
   }
 
-
-  if (loading) {
-    return <LoadingOverlay isVisible={true} />
-  }
-
-  if (!group) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Grupo no encontrado</h2>
-          <p className="text-gray-500 mb-4">No tienes acceso a este grupo o no existe.</p>
-          <button
-            onClick={() => router.push('/groups')}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-          >
-            Volver a grupos
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="relative">
-      <SharedExpenses
-        group={group as Group}
-        onBack={() => router.push('/groups')}
-      />
+    <div className="relative min-h-screen bg-gray-50">
+      {loading ? (
+        // Show a basic page structure while loading
+        <div className="min-h-screen bg-gray-50">
+          <div className="bg-white shadow-sm">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : !group ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Grupo no encontrado</h2>
+            <p className="text-gray-500 mb-4">No tienes acceso a este grupo o no existe.</p>
+            <button
+              onClick={() => router.push('/groups')}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            >
+              Volver a grupos
+            </button>
+          </div>
+        </div>
+      ) : (
+        <SharedExpenses
+          group={group as Group}
+          onBack={() => router.push('/groups')}
+        />
+      )}
+      
+      {/* Loading Overlay with proper backdrop */}
+      <LoadingOverlay isVisible={loading} />
     </div>
   )
 }

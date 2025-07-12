@@ -20,8 +20,10 @@ interface ExpensesStore {
   // Helpers
   getExpenseById: (id: string) => Expense | undefined
   getExpensesByCategory: (categoryId: string) => Expense[]
-  getTotalExpensesByDate: (month: number, year: number) => number
-  getMostExpensiveCategoryByDate: (month: number, year: number) => { category: string; amount: number } | null
+  getTotalExpensesByDate: (month: number, year: number, currency?: string) => number
+  getMostExpensiveCategoryByDate: (month: number, year: number, currency?: string) => { category: string; amount: number } | null
+  getExpensesByCurrency: (currency: string) => Expense[]
+  getAvailableCurrencies: () => string[]
   shouldRefetch: () => boolean
 }
 
@@ -211,20 +213,25 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
     return get().expenses.filter(e => e.category_id === categoryId)
   },
 
-  getTotalExpensesByDate: (month: number, year: number) => {
+  getTotalExpensesByDate: (month: number, year: number, currency?: string) => {
     return get().expenses.reduce((sum, expense) => {
       const expenseDate = new Date(expense.date)
       if (expenseDate.getMonth() === month && expenseDate.getFullYear() === year) {
+        if (currency && expense.currency !== currency) {
+          return sum
+        }
         return sum + expense.amount
       }
       return sum
     }, 0)
   },
 
-  getMostExpensiveCategoryByDate: (month: number, year: number) => {
+  getMostExpensiveCategoryByDate: (month: number, year: number, currency?: string) => {
     const filteredExpenses = get().expenses.filter(expense => {
       const expenseDate = new Date(expense.date)
-      return expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+      const dateMatches = expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+      const currencyMatches = !currency || expense.currency === currency
+      return dateMatches && currencyMatches
     })
 
     if (filteredExpenses.length === 0) return null
@@ -240,6 +247,16 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
     }, { category: '', amount: 0 })
 
     return mostExpensiveCategory.amount > 0 ? mostExpensiveCategory : null
+  },
+
+  getExpensesByCurrency: (currency: string) => {
+    return get().expenses.filter(expense => expense.currency === currency)
+  },
+
+  getAvailableCurrencies: () => {
+    const expenses = get().expenses
+    const currencies = [...new Set(expenses.map(expense => expense.currency))]
+    return currencies.sort()
   },
 
   clearExpenses: () => {

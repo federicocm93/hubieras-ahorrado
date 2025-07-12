@@ -59,7 +59,7 @@ export default function GroupsManager() {
         fetchGroups() // Still fetch groups even if invitation check fails
       })
     }
-  }, [user, checkPendingInvitations])
+  }, [user?.id]) // Only depend on user.id to prevent infinite re-renders
 
   const fetchGroups = async () => {
     if (!user) return

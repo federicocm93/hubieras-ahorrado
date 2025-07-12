@@ -9,6 +9,7 @@ import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { usePrefetch } from '@/hooks/usePrefetch'
+import { formatCurrency as formatCurrencyUtil } from '@/utils/currencies'
 
 interface Group {
   id: string
@@ -36,6 +37,7 @@ interface SharedExpense {
     name: string
   }
   group_id: string
+  currency: string
 }
 
 
@@ -110,7 +112,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         fetchCategories(user.id)
       }
     }
-  }, [user, group, fetchSharedExpensesData, fetchCategories])
+  }, [user?.id, group.id]) // Only depend on user.id and group.id to prevent infinite re-renders
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (!user) return
@@ -137,11 +139,8 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
+  const formatCurrency = (amount: number, currency: string = 'USD') => {
+    return formatCurrencyUtil(amount, currency)
   }
 
   const getBalanceColor = (balance: number) => {
@@ -206,7 +205,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                         )}
                       </p>
                       <p className={`text-lg font-bold ${getBalanceColor(balances[member.user_id] || 0)}`}>
-                        {formatCurrency(balances[member.user_id] || 0)}
+                        {formatCurrency(balances[member.user_id] || 0, 'USD')}
                       </p>
                     </div>
                     <DollarSign className={`h-6 w-6 ${getBalanceColor(balances[member.user_id] || 0)}`} />
@@ -253,7 +252,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                             {expense.description}
                           </h4>
                           <span className="text-xl font-bold text-gray-900">
-                            {formatCurrency(expense.amount)}
+                            {formatCurrency(expense.amount, expense.currency)}
                           </span>
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -269,7 +268,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                           <span>Pagado por: {expense.paid_by_email}</span>
                         </div>
                         <div className="mt-2 text-sm text-gray-600">
-                          {formatCurrency(expense.amount / currentGroupMembers.length)} por persona
+                          {formatCurrency(expense.amount / currentGroupMembers.length, expense.currency)} por persona
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
@@ -320,6 +319,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
             category_id: editingExpense.category.id,
             group_id: editingExpense.group_id,
             user_id: editingExpense.paid_by,
+            currency: editingExpense.currency,
             created_at: editingExpense.date,
             categories: {
               name: editingExpense.category.name

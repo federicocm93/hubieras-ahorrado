@@ -14,6 +14,7 @@ export interface Expense {
   category_id: string
   user_id: string
   group_id: string | null
+  currency: string
   created_at: string
   categories: {
     name: string
@@ -47,6 +48,7 @@ export interface SharedExpense {
     name: string
   }
   group_id: string
+  currency: string
 }
 
 export interface Notification {

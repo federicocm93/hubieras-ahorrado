@@ -16,6 +16,8 @@ import { useCategoriesStore } from '@/stores/categoriesStore'
 import { useExpensesStore } from '@/stores/expensesStore'
 import { Expense } from '@/stores/types'
 import { usePrefetch } from '@/hooks/usePrefetch'
+import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currencies'
+import CustomSelect from '@/components/ui/CustomSelect'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
@@ -34,7 +36,8 @@ export default function Dashboard() {
     fetchExpenses, 
     deleteExpense: deleteExpenseFromStore,
     getTotalExpensesByDate,
-    getMostExpensiveCategoryByDate 
+    getMostExpensiveCategoryByDate,
+    getAvailableCurrencies
   } = useExpensesStore()
   
   // Local state
@@ -43,6 +46,7 @@ export default function Dashboard() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showNotifications, setShowNotifications] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY)
   
   // Prefetch hook
   const { prefetchGroups } = usePrefetch()
@@ -57,7 +61,7 @@ export default function Dashboard() {
       fetchCategories(user.id)
       fetchUnreadNotificationsCount()
     }
-  }, [user, fetchExpenses, fetchCategories])
+  }, [user?.id]) // Only depend on user.id to prevent infinite re-renders
 
   // Fallback timeout for Dashboard loading state
   useEffect(() => {
@@ -109,10 +113,20 @@ export default function Dashboard() {
     }
   }
 
-  const currentMonthExpenses = getTotalExpensesByDate(new Date().getMonth(), new Date().getFullYear())
+  const currentMonthExpenses = getTotalExpensesByDate(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
   const currentDate = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
   
-  const currentMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(new Date().getMonth(), new Date().getFullYear())
+  const currentMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
+  
+  const availableCurrencies = getAvailableCurrencies()
+  const filteredExpenses = expenses.filter(expense => expense.currency === selectedCurrency)
+  
+  // Auto-select the first available currency if user has expenses but selected currency has no expenses
+  useEffect(() => {
+    if (availableCurrencies.length > 0 && filteredExpenses.length === 0) {
+      setSelectedCurrency(availableCurrencies[0])
+    }
+  }, [availableCurrencies, filteredExpenses.length])
 
 
 
@@ -160,9 +174,22 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Summary Card */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Resumen mensual</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">📊 Resumen mensual</h2>
+              {availableCurrencies.length > 1 && (
+                <CustomSelect
+                  value={selectedCurrency}
+                  onChange={setSelectedCurrency}
+                  options={availableCurrencies.map(currency => ({ 
+                    value: currency, 
+                    label: currency 
+                  }))}
+                  placeholder="Seleccionar moneda"
+                />
+              )}
+            </div>
             <div className="text-3xl font-bold text-indigo-600">
-              {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(currentMonthExpenses)}
+              {formatCurrency(currentMonthExpenses, selectedCurrency)}
             </div>
             <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
             
@@ -171,7 +198,7 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-lg font-semibold text-gray-900">{currentMonthMostExpensiveCategory.category}</span>
-                  <span className="text-lg font-bold text-red-600">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(currentMonthMostExpensiveCategory.amount)}</span>
+                  <span className="text-lg font-bold text-red-600">{formatCurrency(currentMonthMostExpensiveCategory.amount, selectedCurrency)}</span>
                 </div>
               </div>
             )}
@@ -202,16 +229,17 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Distribución por Categoría</h2>
             <CategoryPieChart 
-              expenses={expenses} 
+              expenses={filteredExpenses} 
               month={new Date().getMonth()} 
               year={new Date().getFullYear()} 
+              currency={selectedCurrency}
             />
           </div>
 
           {/* Chart */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">📈 Gastos Mensuales</h2>
-            <ExpenseChart expenses={expenses} />
+            <ExpenseChart expenses={filteredExpenses} currency={selectedCurrency} />
           </div>
         </div>
 
@@ -237,6 +265,9 @@ export default function Dashboard() {
                     Monto
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Moneda
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
                   </th>
                 </tr>
@@ -257,7 +288,10 @@ export default function Dashboard() {
                       {expense.categories.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(expense.amount)}
+                      {formatCurrency(expense.amount, expense.currency)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {expense.currency}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex space-x-2">

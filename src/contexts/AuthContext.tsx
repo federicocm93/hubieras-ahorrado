@@ -31,11 +31,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+    
     // Get initial session
     const getInitialSession = async () => {
       try {
         console.log('🔄 Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (!isMounted) return
         
         if (error) {
           console.error('Error getting session:', error)
@@ -57,9 +61,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         console.error('Failed to get initial session:', error)
-        setUser(null)
+        if (isMounted) setUser(null)
       } finally {
-        setLoading(false)
+        if (isMounted) setLoading(false)
       }
     }
 
@@ -69,6 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Auth state change:', event, session?.user?.email)
+        
+        if (!isMounted) return
         
         try {
           setUser(session?.user ?? null)
@@ -90,21 +96,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
           console.error('Error in auth state change:', error)
           // Still set loading to false even if there's an error
-          setLoading(false)
+          if (isMounted) setLoading(false)
         }
       }
     )
     
     // Fallback timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      if (loading) {
+      if (isMounted && loading) {
         console.log('⚠️ Auth loading timeout - forcing loading to false')
         setLoading(false)
       }
     }, 5000) // 5 seconds timeout
+    
+    // Additional fallback timeout for extreme cases
+    const emergencyTimeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.log('🚨 Emergency timeout - forcing loading to false')
+        setLoading(false)
+      }
+    }, 10000) // 10 seconds emergency timeout
 
     return () => {
+      isMounted = false
       clearTimeout(timeoutId)
+      clearTimeout(emergencyTimeoutId)
       subscription.unsubscribe()
     }
   }, [])

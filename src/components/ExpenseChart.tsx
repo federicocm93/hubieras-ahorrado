@@ -26,13 +26,15 @@ interface Expense {
   id: string
   amount: number
   date: string
+  currency: string
 }
 
 interface ExpenseChartProps {
   expenses: Expense[]
+  currency?: string
 }
 
-export default function ExpenseChart({ expenses }: ExpenseChartProps) {
+export default function ExpenseChart({ expenses, currency }: ExpenseChartProps) {
   const chartData = useMemo(() => {
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
@@ -49,7 +51,9 @@ export default function ExpenseChart({ expenses }: ExpenseChartProps) {
       const total = expenses
         .filter(expense => {
           const expenseDate = new Date(expense.date)
-          return expenseDate >= monthStart && expenseDate <= monthEnd
+          const dateMatches = expenseDate >= monthStart && expenseDate <= monthEnd
+          const currencyMatches = !currency || expense.currency === currency
+          return dateMatches && currencyMatches
         })
         .reduce((sum, expense) => sum + expense.amount, 0)
       
@@ -89,7 +93,7 @@ export default function ExpenseChart({ expenses }: ExpenseChartProps) {
         beginAtZero: true,
         ticks: {
           callback: function(value: string | number) {
-            return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(value))
+            return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 0 }).format(Number(value))
           }
         }
       },

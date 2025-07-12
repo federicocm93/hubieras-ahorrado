@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import CustomSelect from '@/components/ui/CustomSelect'
 import { useExpensesStore } from '@/stores/expensesStore'
 import { Category, Expense, GroupMember } from '@/stores/types'
+import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
 
 interface AddExpenseModalProps {
   categories: Category[]
@@ -28,6 +29,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [categoryId, setCategoryId] = useState('')
   const [date, setDate] = useState('')
   const [paidBy, setPaidBy] = useState('')
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -36,9 +38,11 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       setDescription(expense.description)
       setCategoryId(expense.category_id)
       setDate(expense.date)
+      setCurrency(expense.currency || DEFAULT_CURRENCY)
       setPaidBy((expense as { paid_by?: string }).paid_by || '')
     } else {
       setDate(new Date().toISOString().split('T')[0])
+      setCurrency(DEFAULT_CURRENCY)
       setPaidBy(user?.id || '')
     }
   }, [expense, user])
@@ -84,6 +88,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
         category_id: categoryId,
         user_id: user.id,
         date,
+        currency,
         group_id: groupId || null,
         ...(groupId && {
           paid_by: paidBy || user.id
@@ -196,6 +201,21 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               onChange={setCategoryId}
               options={categories.map(category => ({ value: category.id, label: category.name }))}
               placeholder="Selecciona una categoría"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="currency" className="block text-sm font-medium text-gray-700">
+              Moneda
+            </label>
+            <CustomSelect
+              value={currency}
+              onChange={setCurrency}
+              options={CURRENCIES.map(curr => ({ 
+                value: curr.code, 
+                label: `${curr.symbol} ${curr.code} - ${curr.name}` 
+              }))}
+              placeholder="Selecciona una moneda"
             />
           </div>
 
