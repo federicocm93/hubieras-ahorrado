@@ -179,11 +179,12 @@ export default function GroupsManager() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    const [year, month, day] = dateString.split('T')[0].split('-')
+    const monthNames = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ]
+    return `${parseInt(day)} de ${monthNames[parseInt(month) - 1]} de ${year}`
   }
 
 

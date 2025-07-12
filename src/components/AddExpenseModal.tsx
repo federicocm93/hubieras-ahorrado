@@ -47,11 +47,39 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     e.preventDefault()
     if (!user) return
 
+    // Basic validation
+    if (!amount.trim()) {
+      toast.error('Por favor ingresa un monto')
+      return
+    }
+    
+    if (!description.trim()) {
+      toast.error('Por favor ingresa una descripción')
+      return
+    }
+    
+    if (!categoryId) {
+      toast.error('Por favor selecciona una categoría')
+      return
+    }
+
     setLoading(true)
 
     try {
+      // Clean and parse the amount
+      const cleanAmount = amount.trim().replace(',', '.')
+      const parsedAmount = parseFloat(cleanAmount)
+      
+      console.log('Amount input:', amount, 'Cleaned:', cleanAmount, 'Parsed:', parsedAmount)
+      
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        toast.error('Por favor ingresa un monto válido')
+        setLoading(false)
+        return
+      }
+      
       const expenseData = {
-        amount: parseFloat(amount.replace(',', '.')),
+        amount: parsedAmount,
         description,
         category_id: categoryId,
         user_id: user.id,
@@ -61,6 +89,8 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
           paid_by: paidBy || user.id
         })
       }
+      
+      console.log('Expense data to save:', expenseData)
 
       if (expense) {
         // For personal expenses, use the store. For group expenses, use direct API
@@ -124,7 +154,20 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               className="mt-1 block w-full h-10 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               value={amount}
               onChange={(e) => {
-                const value = e.target.value.replace(/[^\d,]/g, '')
+                let value = e.target.value
+                
+                // Remove all non-digit, non-comma, non-dot characters
+                value = value.replace(/[^\d,\.]/g, '')
+                
+                // Convert dots to commas (in case user types dot)
+                value = value.replace(/\./g, ',')
+                
+                // Allow only one comma
+                const commaIndex = value.indexOf(',')
+                if (commaIndex !== -1) {
+                  value = value.substring(0, commaIndex + 1) + value.substring(commaIndex + 1).replace(/,/g, '')
+                }
+                
                 setAmount(value)
               }}
             />

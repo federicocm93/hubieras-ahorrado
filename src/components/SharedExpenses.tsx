@@ -261,7 +261,10 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                             {expense.category.name}
                           </span>
                           <span className="mx-2">•</span>
-                          <span>{new Date(expense.date).toLocaleDateString()}</span>
+                          <span>{(() => {
+                            const [year, month, day] = expense.date.split('T')[0].split('-')
+                            return `${day}/${month}/${year}`
+                          })()}</span>
                           <span className="mx-2">•</span>
                           <span>Pagado por: {expense.paid_by_email}</span>
                         </div>

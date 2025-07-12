@@ -245,11 +245,10 @@ export default function Dashboard() {
                 {expenses.map((expense) => (
                   <tr key={expense.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(expense.date).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      })}
+                      {(() => {
+                        const [year, month, day] = expense.date.split('T')[0].split('-')
+                        return `${day}/${month}/${year}`
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {expense.description}
