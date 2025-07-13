@@ -1,7 +1,8 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
+import { useSession } from '@/hooks/useSession'
 import { supabase } from '@/lib/supabase'
 
 interface AuthContextType {
@@ -27,103 +28,22 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading, signOut } = useSession()
 
+  // Handle side effects when user signs in
   useEffect(() => {
-    let isMounted = true
-    
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        console.log('🔄 Getting initial session...')
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (!isMounted) return
-        
-        if (error) {
-          console.error('Error getting session:', error)
-          setUser(null)
-          return
-        }
-        
-        if (session?.user) {
-          console.log('✅ Found existing session for:', session.user.email)
-          setUser(session.user)
-          
-          // Check for pending invitations (non-blocking)
-          checkPendingInvitationsForUser(session.user).catch(error => {
-            console.error('Error checking pending invitations:', error)
-          })
-        } else {
-          console.log('ℹ️ No existing session found')
-          setUser(null)
-        }
-      } catch (error) {
-        console.error('Failed to get initial session:', error)
-        if (isMounted) setUser(null)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
+    if (user) {
+      // Create default categories for new users (non-blocking)
+      createDefaultCategories(user.id).catch(error => {
+        console.error('Error creating default categories:', error)
+      })
+      
+      // Check for pending invitations (non-blocking)
+      checkPendingInvitationsForUser(user).catch(error => {
+        console.error('Error checking pending invitations:', error)
+      })
     }
-
-    getInitialSession()
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔄 Auth state change:', event, session?.user?.email)
-        
-        if (!isMounted) return
-        
-        try {
-          setUser(session?.user ?? null)
-          // Set loading to false immediately after setting user
-          setLoading(false)
-          
-          // Create default categories for new users and check for pending invitations
-          // These operations run in the background and don't block the UI
-          if (event === 'SIGNED_IN' && session?.user) {
-            try {
-              await createDefaultCategories(session.user.id)
-              checkPendingInvitationsForUser(session.user).catch(error => {
-                console.error('Error checking pending invitations:', error)
-              })
-            } catch (error) {
-              console.error('Error creating default categories:', error)
-            }
-          }
-        } catch (error) {
-          console.error('Error in auth state change:', error)
-          // Still set loading to false even if there's an error
-          if (isMounted) setLoading(false)
-        }
-      }
-    )
-    
-    // Fallback timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (isMounted && loading) {
-        console.log('⚠️ Auth loading timeout - forcing loading to false')
-        setLoading(false)
-      }
-    }, 5000) // 5 seconds timeout
-    
-    // Additional fallback timeout for extreme cases
-    const emergencyTimeoutId = setTimeout(() => {
-      if (isMounted) {
-        console.log('🚨 Emergency timeout - forcing loading to false')
-        setLoading(false)
-      }
-    }, 10000) // 10 seconds emergency timeout
-
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
-      clearTimeout(emergencyTimeoutId)
-      subscription.unsubscribe()
-    }
-  }, [])
+  }, [user]) // Only run when user changes
 
   const createDefaultCategories = async (userId: string) => {
     try {
@@ -268,22 +188,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkPendingInvitations = async () => {
     if (user) {
       await checkPendingInvitationsForUser(user)
-    }
-  }
-
-  const signOut = async () => {
-    try {
-      setLoading(true)
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.error('Sign out error:', error)
-        return
-      }
-    } catch (error) {
-      console.error('Unexpected sign out error:', error)
-    } finally {
-      setLoading(false)
     }
   }
 

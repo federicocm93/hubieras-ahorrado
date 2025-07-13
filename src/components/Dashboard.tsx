@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -14,26 +14,26 @@ import CategoryPieChart from './CategoryPieChart'
 import Image from 'next/image'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { useExpensesStore } from '@/stores/expensesStore'
+import { useDataSync } from '@/hooks/useDataSync'
 import { Expense } from '@/stores/types'
 import { usePrefetch } from '@/hooks/usePrefetch'
 import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currencies'
 import CustomSelect from '@/components/ui/CustomSelect'
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading: authLoading } = useAuth()
   const router = useRouter()
   
-  // Zustand stores
+  // Coordinated data synchronization
+  const { isLoading: dataLoading, syncData } = useDataSync()
+  
+  // Zustand stores  
   const { 
     categories, 
-    loading: categoriesLoading, 
-    fetchCategories, 
     deleteCategory: deleteCategoryFromStore 
   } = useCategoriesStore()
   const { 
     expenses, 
-    loading: expensesLoading, 
-    fetchExpenses, 
     deleteExpense: deleteExpenseFromStore,
     getTotalExpensesByDate,
     getMostExpensiveCategoryByDate,
@@ -51,51 +51,37 @@ export default function Dashboard() {
   // Prefetch hook
   const { prefetchGroups } = usePrefetch()
   
-  // Combined loading state
-  const loading = categoriesLoading || expensesLoading
+  // Simple loading state - show loading while auth is loading or data is syncing
+  const loading = authLoading || dataLoading
+  
 
-  useEffect(() => {
-    if (user) {
-      console.log('🔄 Dashboard: Fetching data for user:', user.email)
-      fetchExpenses(user.id)
-      fetchCategories(user.id)
-      fetchUnreadNotificationsCount()
-    }
-  }, [user?.id]) // Only depend on user.id to prevent infinite re-renders
-
-  // Fallback timeout for Dashboard loading state
-  useEffect(() => {
-    if (loading) {
-      const timeoutId = setTimeout(() => {
-        console.log('⚠️ Dashboard loading timeout - something might be stuck')
-        // Log current loading states for debugging
-        console.log('Current loading states:', { 
-          categoriesLoading, 
-          expensesLoading, 
-          user: user?.email 
-        })
-      }, 20000) // 20 seconds timeout for debugging
-
-      return () => clearTimeout(timeoutId)
-    }
-  }, [loading, categoriesLoading, expensesLoading, user])
-
-
-  const fetchUnreadNotificationsCount = async () => {
+  // Memoized notification fetch to prevent unnecessary re-renders
+  const fetchUnreadNotificationsCount = useCallback(async () => {
     if (!user) return
     
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('read', false)
-    
-    if (error) {
-      console.error('Error fetching notifications count:', error)
-    } else {
-      setUnreadNotifications(data?.length || 0)
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('read', false)
+      
+      if (error) {
+        console.error('Error fetching notifications count:', error)
+      } else {
+        setUnreadNotifications(data?.length || 0)
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching notifications:', error)
     }
-  }
+  }, [user?.id])
+
+  // Initialize data and notifications when user is available
+  useEffect(() => {
+    if (user) {
+      fetchUnreadNotificationsCount()
+    }
+  }, [user, fetchUnreadNotificationsCount])
 
   const deleteExpense = async (id: string) => {
     try {
@@ -348,7 +334,7 @@ export default function Dashboard() {
           onClose={() => setShowAddExpense(false)}
           onSuccess={() => {
             setShowAddExpense(false)
-            if (user) fetchExpenses(user.id)
+            syncData(true) // Force refresh after adding expense
           }}
         />
       )}
@@ -360,7 +346,7 @@ export default function Dashboard() {
           onClose={() => setEditingExpense(null)}
           onSuccess={() => {
             setEditingExpense(null)
-            if (user) fetchExpenses(user.id)
+            syncData(true) // Force refresh after editing expense
           }}
         />
       )}
@@ -370,7 +356,7 @@ export default function Dashboard() {
           onClose={() => setShowAddCategory(false)}
           onSuccess={() => {
             setShowAddCategory(false)
-            if (user) fetchCategories(user.id)
+            syncData(true) // Force refresh after adding category
           }}
         />
       )}

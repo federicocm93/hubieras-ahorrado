@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useRequestQueue } from './useRequestQueue'
 import { supabase } from '@/lib/supabase'
 
 interface Group {
@@ -80,11 +81,11 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export function usePrefetch() {
   const { user } = useAuth()
+  const { enqueue } = useRequestQueue()
   const cache = useRef<PrefetchCache>({})
-  const pendingRequests = useRef<Set<string>>(new Set())
 
   const prefetchGroups = useCallback(async (): Promise<UserGroupsResponse | undefined> => {
-    if (!user || pendingRequests.current.has('groups')) return
+    if (!user) return
 
     const cacheKey = 'groups'
     const cached = cache.current[cacheKey]
@@ -94,11 +95,9 @@ export function usePrefetch() {
       return cached.data as UserGroupsResponse
     }
 
-    pendingRequests.current.add('groups')
-    
-    try {
+    return enqueue(cacheKey, async () => {
       const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
+      if (!session.session) throw new Error('No session')
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-user-groups`, {
         method: 'POST',
@@ -108,27 +107,23 @@ export function usePrefetch() {
         },
       })
 
-      if (!response.ok) return
+      if (!response.ok) throw new Error('Failed to fetch groups')
 
       const data = await response.json()
       
-      if (!data.error) {
-        cache.current[cacheKey] = {
-          data: data,
-          timestamp: Date.now()
-        }
-        console.log('🚀 Groups prefetched successfully')
-        return data
+      if (data.error) throw new Error(data.error)
+
+      cache.current[cacheKey] = {
+        data: data,
+        timestamp: Date.now()
       }
-    } catch (error) {
-      console.error('Error prefetching groups:', error)
-    } finally {
-      pendingRequests.current.delete('groups')
-    }
-  }, [user])
+      console.log('🚀 Groups prefetched successfully')
+      return data
+    })
+  }, [user, enqueue])
 
   const prefetchGroupDetails = useCallback(async (groupId: string): Promise<GroupDetailsResponse | undefined> => {
-    if (!user || !groupId || pendingRequests.current.has(`group-${groupId}`)) return
+    if (!user || !groupId) return
 
     const cacheKey = `group-${groupId}`
     const cached = cache.current[cacheKey]
@@ -138,11 +133,9 @@ export function usePrefetch() {
       return cached.data as GroupDetailsResponse
     }
 
-    pendingRequests.current.add(`group-${groupId}`)
-    
-    try {
+    return enqueue(cacheKey, async () => {
       const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
+      if (!session.session) throw new Error('No session')
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-group-details`, {
         method: 'POST',
@@ -153,27 +146,23 @@ export function usePrefetch() {
         body: JSON.stringify({ group_id: groupId }),
       })
 
-      if (!response.ok) return
+      if (!response.ok) throw new Error('Failed to fetch group details')
 
       const data = await response.json()
       
-      if (!data.error) {
-        cache.current[cacheKey] = {
-          data: data,
-          timestamp: Date.now()
-        }
-        console.log(`🚀 Group ${groupId} details prefetched successfully`)
-        return data
+      if (data.error) throw new Error(data.error)
+
+      cache.current[cacheKey] = {
+        data: data,
+        timestamp: Date.now()
       }
-    } catch (error) {
-      console.error(`Error prefetching group ${groupId}:`, error)
-    } finally {
-      pendingRequests.current.delete(`group-${groupId}`)
-    }
-  }, [user])
+      console.log(`🚀 Group ${groupId} details prefetched successfully`)
+      return data
+    })
+  }, [user, enqueue])
 
   const prefetchSharedExpenses = useCallback(async (groupId: string): Promise<SharedExpensesResponse | undefined> => {
-    if (!user || !groupId || pendingRequests.current.has(`expenses-${groupId}`)) return
+    if (!user || !groupId) return
 
     const cacheKey = `expenses-${groupId}`
     const cached = cache.current[cacheKey]
@@ -183,11 +172,9 @@ export function usePrefetch() {
       return cached.data as SharedExpensesResponse
     }
 
-    pendingRequests.current.add(`expenses-${groupId}`)
-    
-    try {
+    return enqueue(cacheKey, async () => {
       const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
+      if (!session.session) throw new Error('No session')
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-shared-expenses`, {
         method: 'POST',
@@ -198,27 +185,23 @@ export function usePrefetch() {
         body: JSON.stringify({ group_id: groupId }),
       })
 
-      if (!response.ok) return
+      if (!response.ok) throw new Error('Failed to fetch shared expenses')
 
       const data = await response.json()
       
-      if (!data.error) {
-        cache.current[cacheKey] = {
-          data: data,
-          timestamp: Date.now()
-        }
-        console.log(`🚀 Shared expenses for group ${groupId} prefetched successfully`)
-        return data
+      if (data.error) throw new Error(data.error)
+
+      cache.current[cacheKey] = {
+        data: data,
+        timestamp: Date.now()
       }
-    } catch (error) {
-      console.error(`Error prefetching shared expenses for group ${groupId}:`, error)
-    } finally {
-      pendingRequests.current.delete(`expenses-${groupId}`)
-    }
-  }, [user])
+      console.log(`🚀 Shared expenses for group ${groupId} prefetched successfully`)
+      return data
+    })
+  }, [user, enqueue])
 
   const prefetchDashboardData = useCallback(async (): Promise<DashboardResponse | undefined> => {
-    if (!user || pendingRequests.current.has('dashboard')) return
+    if (!user) return
 
     const cacheKey = 'dashboard'
     const cached = cache.current[cacheKey]
@@ -228,9 +211,7 @@ export function usePrefetch() {
       return cached.data as DashboardResponse
     }
 
-    pendingRequests.current.add('dashboard')
-    
-    try {
+    return enqueue(cacheKey, async () => {
       // Prefetch categories and expenses data that the dashboard needs
       // This simulates what the dashboard stores would fetch
       console.log('🚀 Dashboard data prefetch initiated (categories & expenses)')
@@ -250,12 +231,8 @@ export function usePrefetch() {
       }
       
       return dashboardData
-    } catch (error) {
-      console.error('Error prefetching dashboard data:', error)
-    } finally {
-      pendingRequests.current.delete('dashboard')
-    }
-  }, [user])
+    })
+  }, [user, enqueue])
 
   const getCachedData = useCallback((key: string): PrefetchData | null => {
     const cached = cache.current[key]
@@ -267,7 +244,6 @@ export function usePrefetch() {
 
   const clearCache = useCallback(() => {
     cache.current = {}
-    pendingRequests.current.clear()
   }, [])
 
   return {
