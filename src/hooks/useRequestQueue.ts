@@ -27,7 +27,7 @@ export function useRequestQueue(): UseRequestQueueReturn {
     const existingRequest = queue.current.get(key)
     if (existingRequest) {
       console.log(`🔄 Request ${key} already in queue, returning existing promise`)
-      return existingRequest.promise
+      return existingRequest.promise as Promise<T>
     }
 
     // Create new request
@@ -46,7 +46,7 @@ export function useRequestQueue(): UseRequestQueueReturn {
       reject: reject!
     }
 
-    queue.current.set(key, queuedRequest)
+    queue.current.set(key, queuedRequest as QueuedRequest<unknown>)
     console.log(`➕ Added request ${key} to queue`)
 
     // Execute the request
