@@ -9,7 +9,8 @@ import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { usePrefetch } from '@/hooks/usePrefetch'
-import { formatCurrency as formatCurrencyUtil } from '@/utils/currencies'
+import { formatCurrency as formatCurrencyUtil, DEFAULT_CURRENCY } from '@/utils/currencies'
+import CustomSelect from '@/components/ui/CustomSelect'
 
 interface Group {
   id: string
@@ -53,8 +54,8 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const [loading, setLoading] = useState(true)
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [editingExpense, setEditingExpense] = useState<SharedExpense | null>(null)
-  const [balances, setBalances] = useState<Record<string, number>>({})
   const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>([])
+  const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY)
   const initialFetchDone = useRef(false)
   const currentGroupId = useRef<string | null>(null)
   const { prefetchGroups } = usePrefetch()
@@ -90,7 +91,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
       setCurrentGroupMembers(data.members || [])
       setExpenses(data.expenses || [])
-      setBalances(data.balances || {})
       
       console.log('📊 Shared expenses data fetched via edge function:', data)
     } catch (error: unknown) {
@@ -154,6 +154,52 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     return member?.user_email || 'Usuario desconocido'
   }
 
+  // Get available currencies from expenses
+  const getAvailableCurrencies = () => {
+    const currencies = new Set(expenses.map(expense => expense.currency))
+    return Array.from(currencies).sort()
+  }
+
+  // Filter expenses by selected currency
+  const filteredExpenses = expenses.filter(expense => expense.currency === selectedCurrency)
+
+  // Calculate balances for the selected currency only
+  const getCurrencySpecificBalances = () => {
+    const currencyBalances: Record<string, number> = {}
+    
+    // Initialize all members with 0 balance
+    currentGroupMembers.forEach(member => {
+      currencyBalances[member.user_id] = 0
+    })
+
+    // Calculate balances only for expenses in the selected currency
+    filteredExpenses.forEach(expense => {
+      const amountPerPerson = expense.amount / currentGroupMembers.length
+      
+      // The person who paid gets credited
+      currencyBalances[expense.paid_by] += expense.amount - amountPerPerson
+      
+      // Everyone else gets debited
+      currentGroupMembers.forEach(member => {
+        if (member.user_id !== expense.paid_by) {
+          currencyBalances[member.user_id] -= amountPerPerson
+        }
+      })
+    })
+
+    return currencyBalances
+  }
+
+  const availableCurrencies = getAvailableCurrencies()
+  const currencySpecificBalances = getCurrencySpecificBalances()
+
+  // Auto-select the first available currency if user has expenses but selected currency has no expenses
+  useEffect(() => {
+    if (availableCurrencies.length > 0 && filteredExpenses.length === 0) {
+      setSelectedCurrency(availableCurrencies[0])
+    }
+  }, [availableCurrencies, filteredExpenses.length])
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -180,13 +226,31 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setShowAddExpense(true)}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Agregar Gasto
-              </button>
+              <div className="flex items-center space-x-4">
+                {availableCurrencies.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600 whitespace-nowrap">Moneda:</span>
+                    <div className="w-28">
+                      <CustomSelect
+                        value={selectedCurrency}
+                        onChange={setSelectedCurrency}
+                        options={availableCurrencies.map(currency => ({ 
+                          value: currency, 
+                          label: currency 
+                        }))}
+                        placeholder="Seleccionar moneda"
+                      />
+                    </div>
+                  </div>
+                )}
+                <button
+                  onClick={() => setShowAddExpense(true)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Agregar Gasto
+                </button>
+              </div>
             </div>
           </div>
 
@@ -204,16 +268,16 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                           <span className="text-xs text-gray-500 ml-1">(Tú)</span>
                         )}
                       </p>
-                      <p className={`text-lg font-bold ${getBalanceColor(balances[member.user_id] || 0)}`}>
-                        {formatCurrency(balances[member.user_id] || 0, 'USD')}
+                      <p className={`text-lg font-bold ${getBalanceColor(currencySpecificBalances[member.user_id] || 0)}`}>
+                        {formatCurrency(currencySpecificBalances[member.user_id] || 0, selectedCurrency)}
                       </p>
                     </div>
-                    <DollarSign className={`h-6 w-6 ${getBalanceColor(balances[member.user_id] || 0)}`} />
+                    <DollarSign className={`h-6 w-6 ${getBalanceColor(currencySpecificBalances[member.user_id] || 0)}`} />
                   </div>
-                  {balances[member.user_id] > 0 && (
+                  {currencySpecificBalances[member.user_id] > 0 && (
                     <p className="text-xs text-green-600 mt-1">Le deben dinero</p>
                   )}
-                  {balances[member.user_id] < 0 && (
+                  {currencySpecificBalances[member.user_id] < 0 && (
                     <p className="text-xs text-red-600 mt-1">Debe dinero</p>
                   )}
                 </div>
@@ -224,12 +288,15 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           {/* Expenses List */}
           <div className="px-6 py-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Gastos Compartidos</h3>
-            {expenses.length === 0 ? (
+            {filteredExpenses.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No hay gastos compartidos</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Comienza agregando un gasto compartido para el grupo.
+                  {expenses.length === 0 
+                    ? "Comienza agregando un gasto compartido para el grupo."
+                    : `No hay gastos en ${selectedCurrency}. Selecciona otra moneda o agrega un gasto.`
+                  }
                 </p>
                 <div className="mt-6">
                   <button
@@ -243,7 +310,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
               </div>
             ) : (
               <div className="space-y-4">
-                {expenses.map((expense) => (
+                {filteredExpenses.map((expense) => (
                   <div key={expense.id} className="bg-white border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">

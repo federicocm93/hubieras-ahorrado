@@ -162,16 +162,18 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">📊 Resumen mensual</h2>
-              {availableCurrencies.length > 1 && (
-                <CustomSelect
-                  value={selectedCurrency}
-                  onChange={setSelectedCurrency}
-                  options={availableCurrencies.map(currency => ({ 
-                    value: currency, 
-                    label: currency 
-                  }))}
-                  placeholder="Seleccionar moneda"
-                />
+              {availableCurrencies.length > 0 && (
+                <div className="w-28">
+                  <CustomSelect
+                    value={selectedCurrency}
+                    onChange={setSelectedCurrency}
+                    options={availableCurrencies.map(currency => ({ 
+                      value: currency, 
+                      label: currency 
+                    }))}
+                    placeholder="Seleccionar moneda"
+                  />
+                </div>
               )}
             </div>
             <div className="text-3xl font-bold text-indigo-600">
