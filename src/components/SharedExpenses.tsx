@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft } from 'lucide-react'
+import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3 } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
@@ -11,6 +11,29 @@ import { useCategoriesStore } from '@/stores/categoriesStore'
 import { usePrefetch } from '@/hooks/usePrefetch'
 import { formatCurrency as formatCurrencyUtil, DEFAULT_CURRENCY } from '@/utils/currencies'
 import CustomSelect from '@/components/ui/CustomSelect'
+import { Pie, Line } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+)
 
 interface Group {
   id: string
@@ -200,6 +223,96 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
     }
   }, [availableCurrencies, filteredExpenses.length])
 
+  // Chart data calculations
+  const getCategoryData = () => {
+    const categoryTotals: Record<string, number> = {}
+    filteredExpenses.forEach(expense => {
+      const category = expense.category.name
+      categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount
+    })
+
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ]
+
+    return {
+      labels: Object.keys(categoryTotals),
+      datasets: [{
+        data: Object.values(categoryTotals),
+        backgroundColor: colors.slice(0, Object.keys(categoryTotals).length),
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    }
+  }
+
+  const getMonthlyData = () => {
+    const monthlyTotals: Record<string, number> = {}
+    filteredExpenses.forEach(expense => {
+      const date = new Date(expense.date)
+      const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`
+      monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + expense.amount
+    })
+
+    const sortedMonths = Object.keys(monthlyTotals).sort()
+    const labels = sortedMonths.map(month => {
+      const [year, monthNum] = month.split('-')
+      const date = new Date(parseInt(year), parseInt(monthNum) - 1)
+      return date.toLocaleDateString('es', { month: 'short', year: 'numeric' })
+    })
+
+    return {
+      labels,
+      datasets: [{
+        label: `Total Gastos (${selectedCurrency})`,
+        data: sortedMonths.map(month => monthlyTotals[month]),
+        borderColor: '#4F46E5',
+        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+        tension: 0.1,
+        fill: true
+      }]
+    }
+  }
+
+  const getTopSpenderThisMonth = () => {
+    const currentDate = new Date()
+    const currentMonth = currentDate.getMonth()
+    const currentYear = currentDate.getFullYear()
+
+    const monthlySpending: Record<string, number> = {}
+    filteredExpenses.forEach(expense => {
+      const expenseDate = new Date(expense.date)
+      if (expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
+        monthlySpending[expense.paid_by] = (monthlySpending[expense.paid_by] || 0) + expense.amount
+      }
+    })
+
+    const topSpender = Object.entries(monthlySpending).reduce((max, [userId, amount]) => 
+      amount > max.amount ? { userId, amount } : max
+    , { userId: '', amount: 0 })
+
+    return {
+      email: getMemberEmail(topSpender.userId),
+      amount: topSpender.amount,
+      isCurrentUser: topSpender.userId === user?.id
+    }
+  }
+
+  const categoryData = getCategoryData()
+  const monthlyData = getMonthlyData()
+  const topSpender = getTopSpenderThisMonth()
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+    },
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -284,6 +397,82 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
               ))}
             </div>
           </div>
+
+          {/* Analytics Section */}
+          {filteredExpenses.length > 0 && (
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
+                <BarChart3 className="h-6 w-6 mr-2 text-indigo-600" />
+                Análisis de Gastos
+              </h3>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Category Pie Chart */}
+                <div className="bg-white p-4 rounded-lg border">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Gastos por Categoría</h4>
+                  <div className="h-64">
+                    {categoryData.labels.length > 0 ? (
+                      <Pie data={categoryData} options={chartOptions} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        No hay datos para mostrar
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Monthly Trend Chart */}
+                <div className="bg-white p-4 rounded-lg border">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Tendencia Mensual</h4>
+                  <div className="h-64">
+                    {monthlyData.labels.length > 0 ? (
+                      <Line data={monthlyData} options={chartOptions} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        No hay datos para mostrar
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Top Spender This Month */}
+                <div className="bg-white p-4 rounded-lg border">
+                  <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
+                    <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
+                    Mayor Gasto del Mes
+                  </h4>
+                  <div className="flex flex-col items-center justify-center h-48">
+                    {topSpender.amount > 0 ? (
+                      <>
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3">
+                            <Users className="h-8 w-8 text-white" />
+                          </div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {topSpender.email}
+                            {topSpender.isCurrentUser && (
+                              <span className="text-xs text-gray-500 block">(Tú)</span>
+                            )}
+                          </p>
+                          <p className="text-lg font-bold text-indigo-600 mt-2">
+                            {formatCurrency(topSpender.amount, selectedCurrency)}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Total gastado este mes
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center text-gray-500">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                        <p className="text-sm">No hay gastos este mes</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Expenses List */}
           <div className="px-6 py-4">
