@@ -190,31 +190,32 @@ export default function GroupsManager() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <Users className="h-8 w-8 text-indigo-600 mr-3" />
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
+                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 mr-2 sm:mr-3" />
                   Mis Grupos
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   Gestiona tus grupos de gastos compartidos
                 </p>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                   onClick={() => router.push('/dashboard')}
                   onMouseEnter={() => prefetchDashboardData()}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Volver a Gastos Personales
+                  <span className="sm:hidden">← Gastos Personales</span>
+                  <span className="hidden sm:inline">Volver a Gastos Personales</span>
                 </button>
                 <button
                   onClick={() => setShowCreateGroup(true)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center"
+                  className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Crear Grupo
@@ -223,10 +224,10 @@ export default function GroupsManager() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Pending Invitations Section */}
             {pendingInvitations.length > 0 && (
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Invitaciones Pendientes</h3>
                 <div className="space-y-3">
                   {pendingInvitations.map((invitation) => (
@@ -234,13 +235,13 @@ export default function GroupsManager() {
                       key={invitation.id}
                       className="bg-blue-50 border border-blue-200 rounded-lg p-4"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                         <div className="flex items-center">
-                          <div className="bg-blue-100 rounded-full p-2">
+                          <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
                             <Users className="h-5 w-5 text-blue-600" />
                           </div>
-                          <div className="ml-3">
-                            <h4 className="text-sm font-medium text-gray-900">
+                          <div className="ml-3 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900 truncate">
                               Invitación a &quot;{(() => {
                                 const groups = invitation.groups as unknown
                                 if (Array.isArray(groups) && groups.length > 0) {
@@ -256,14 +257,14 @@ export default function GroupsManager() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 sm:flex-shrink-0">
                           <button
                             onClick={() => handleInvitationResponse(
                               invitation.id,
                               invitation.group_id,
                               'accepted'
                             )}
-                            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                            className="flex-1 sm:flex-initial px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
                           >
                             Aceptar
                           </button>
@@ -273,7 +274,7 @@ export default function GroupsManager() {
                               invitation.group_id,
                               'rejected'
                             )}
-                            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                            className="flex-1 sm:flex-initial px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
                           >
                             Rechazar
                           </button>
@@ -304,35 +305,35 @@ export default function GroupsManager() {
                 </div>
               </div>
             ) : groups.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {groups.map((group) => (
                   <div
                     key={group.id}
-                    className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
+                    className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => router.push(`/groups/${group.id}`)}
                     onMouseEnter={() => {
                       prefetchGroupDetails(group.id)
                       prefetchSharedExpenses(group.id)
                     }}
                   >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <div className="bg-indigo-100 rounded-full p-2">
-                          <Users className="h-6 w-6 text-indigo-600" />
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center min-w-0 flex-1">
+                        <div className="bg-indigo-100 rounded-full p-2 flex-shrink-0">
+                          <Users className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" />
                         </div>
-                        <div className="ml-3">
-                          <h3 className="text-lg font-medium text-gray-900">
+                        <div className="ml-3 min-w-0">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate">
                             {group.name}
                           </h3>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             handleLeaveGroup(group.id)
                           }}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 p-1"
                           title="Salir del grupo"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -342,12 +343,12 @@ export default function GroupsManager() {
 
                     <div className="space-y-2">
                       <div className="flex items-center text-sm text-gray-600">
-                        <Users className="h-4 w-4 mr-2" />
-                        {group.members.length} miembro{group.members.length !== 1 ? 's' : ''}
+                        <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{group.members.length} miembro{group.members.length !== 1 ? 's' : ''}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Creado {formatDate(group.created_at)}
+                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span className="truncate">Creado {formatDate(group.created_at)}</span>
                       </div>
                     </div>
 
@@ -356,14 +357,14 @@ export default function GroupsManager() {
                         {group.members.slice(0, 3).map((member) => (
                           <div
                             key={member.id}
-                            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-500 text-white text-sm font-medium border-2 border-white"
+                            className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-indigo-500 text-white text-xs sm:text-sm font-medium border-2 border-white"
                             title={member.user_email}
                           >
                             {member.user_email?.charAt(0).toUpperCase() || 'U'}
                           </div>
                         ))}
                         {group.members.length > 3 && (
-                          <div className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-500 text-white text-sm font-medium border-2 border-white">
+                          <div className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-500 text-white text-xs sm:text-sm font-medium border-2 border-white">
                             +{group.members.length - 3}
                           </div>
                         )}
@@ -372,7 +373,8 @@ export default function GroupsManager() {
 
                     <div className="mt-4">
                       <button className="w-full text-center text-sm text-indigo-600 hover:text-indigo-800 font-medium">
-                        Ver gastos compartidos →
+                        <span className="sm:hidden">Ver gastos →</span>
+                        <span className="hidden sm:inline">Ver gastos compartidos →</span>
                       </button>
                     </div>
                   </div>
