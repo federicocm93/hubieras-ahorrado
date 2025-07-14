@@ -121,21 +121,21 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 space-y-4 sm:space-y-0">
-            <div className="flex justify-center sm:justify-start">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex justify-start">
               <Image 
-                src="/logo.png" 
+                src="/hubieras-ahorrado.svg" 
                 alt="Logo" 
                 width={400} 
                 height={100} 
                 className="h-[60px] w-[240px] sm:h-[80px] sm:w-[320px] lg:h-[100px] lg:w-[400px]" 
               />
             </div>
-            <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              <span className="text-xs sm:text-sm text-gray-500 text-center truncate max-w-full">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="hidden sm:block text-xs sm:text-sm text-gray-500 text-center truncate max-w-full">
                 👋 Bienvenido, {user?.email}
               </span>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
                   onClick={() => setShowNotifications(true)}
                   className="relative text-gray-500 hover:text-gray-700 p-2"

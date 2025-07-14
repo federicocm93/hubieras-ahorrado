@@ -48,11 +48,11 @@ export default function Auth() {
         <div>
           <div className="flex justify-center mb-6">
             <Image 
-              src="/logo.png" 
-              alt="Logo" 
-              width={400} 
-              height={100} 
-              className="h-[100px] w-[400px] animate-[fadeIn_2s_ease-in-out_1] opacity-0 [animation-fill-mode:forwards]" 
+              src="/hubieras-ahorrado.svg" 
+              alt="Hubieras Ahorrado Logo" 
+              width={800} 
+              height={200} 
+              className="h-[200px] w-[800px] animate-[fadeIn_2s_ease-in-out_1] opacity-0 [animation-fill-mode:forwards]" 
             />
           </div>
         </div>
