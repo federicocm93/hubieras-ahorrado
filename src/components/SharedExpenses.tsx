@@ -315,11 +315,11 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="flex items-center">
                 <button
                   onClick={onBack}
@@ -330,8 +330,8 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                   <ArrowLeft className="h-6 w-6" />
                 </button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <Users className="h-8 w-8 text-indigo-600 mr-3" />
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
+                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 mr-2 sm:mr-3" />
                     {group.name}
                   </h1>
                   <p className="text-sm text-gray-600">
@@ -339,11 +339,11 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 {availableCurrencies.length > 0 && (
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600 whitespace-nowrap">Moneda:</span>
-                    <div className="w-28">
+                    <div className="w-full sm:w-28">
                       <CustomSelect
                         value={selectedCurrency}
                         onChange={setSelectedCurrency}
@@ -358,7 +358,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 )}
                 <button
                   onClick={() => setShowAddExpense(true)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Agregar Gasto
@@ -368,14 +368,14 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           </div>
 
           {/* Balances Section */}
-          <div className="px-6 py-4 bg-gray-50 border-b">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Balances</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentGroupMembers.map(member => (
                 <div key={member.user_id} className="bg-white p-4 rounded-lg border">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 truncate">
                         {getMemberEmail(member.user_id)}
                         {member.user_id === user?.id && (
                           <span className="text-xs text-gray-500 ml-1">(Tú)</span>
@@ -385,7 +385,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                         {formatCurrency(currencySpecificBalances[member.user_id] || 0, selectedCurrency)}
                       </p>
                     </div>
-                    <DollarSign className={`h-6 w-6 ${getBalanceColor(currencySpecificBalances[member.user_id] || 0)}`} />
+                    <DollarSign className={`h-6 w-6 flex-shrink-0 ml-2 ${getBalanceColor(currencySpecificBalances[member.user_id] || 0)}`} />
                   </div>
                   {currencySpecificBalances[member.user_id] > 0 && (
                     <p className="text-xs text-green-600 mt-1">Le deben dinero</p>
@@ -400,17 +400,17 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
           {/* Analytics Section */}
           {filteredExpenses.length > 0 && (
-            <div className="px-6 py-4 bg-gray-50 border-b">
+            <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b">
               <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
                 <BarChart3 className="h-6 w-6 mr-2 text-indigo-600" />
                 Análisis de Gastos
               </h3>
               
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* Category Pie Chart */}
                 <div className="bg-white p-4 rounded-lg border">
                   <h4 className="text-md font-medium text-gray-900 mb-4">Gastos por Categoría</h4>
-                  <div className="h-64">
+                  <div className="h-48 sm:h-64">
                     {categoryData.labels.length > 0 ? (
                       <Pie data={categoryData} options={chartOptions} />
                     ) : (
@@ -424,7 +424,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 {/* Monthly Trend Chart */}
                 <div className="bg-white p-4 rounded-lg border">
                   <h4 className="text-md font-medium text-gray-900 mb-4">Tendencia Mensual</h4>
-                  <div className="h-64">
+                  <div className="h-48 sm:h-64">
                     {monthlyData.labels.length > 0 ? (
                       <Line data={monthlyData} options={chartOptions} />
                     ) : (
@@ -436,35 +436,33 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 </div>
 
                 {/* Top Spender This Month */}
-                <div className="bg-white p-4 rounded-lg border">
+                <div className="bg-white p-4 rounded-lg border md:col-span-2 xl:col-span-1">
                   <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
                     <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
                     Mayor Gasto del Mes
                   </h4>
-                  <div className="flex flex-col items-center justify-center h-48">
+                  <div className="flex flex-col items-center justify-center h-40 sm:h-48">
                     {topSpender.amount > 0 ? (
-                      <>
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3">
-                            <Users className="h-8 w-8 text-white" />
-                          </div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {topSpender.email}
-                            {topSpender.isCurrentUser && (
-                              <span className="text-xs text-gray-500 block">(Tú)</span>
-                            )}
-                          </p>
-                          <p className="text-lg font-bold text-indigo-600 mt-2">
-                            {formatCurrency(topSpender.amount, selectedCurrency)}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Total gastado este mes
-                          </p>
+                      <div className="flex flex-col items-center text-center w-full">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3 mx-auto">
+                          <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                         </div>
-                      </>
+                        <p className="text-sm font-medium text-gray-900 px-2 w-full">
+                          {topSpender.email}
+                          {topSpender.isCurrentUser && (
+                            <span className="text-xs text-gray-500 block">(Tú)</span>
+                          )}
+                        </p>
+                        <p className="text-lg font-bold text-indigo-600 mt-2">
+                          {formatCurrency(topSpender.amount, selectedCurrency)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Total gastado este mes
+                        </p>
+                      </div>
                     ) : (
-                      <div className="text-center text-gray-500">
-                        <TrendingUp className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                      <div className="flex flex-col items-center text-center text-gray-500">
+                        <TrendingUp className="h-8 w-8 sm:h-12 sm:w-12 mb-3 text-gray-400" />
                         <p className="text-sm">No hay gastos este mes</p>
                       </div>
                     )}
@@ -475,13 +473,13 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           )}
 
           {/* Expenses List */}
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Gastos Compartidos</h3>
             {filteredExpenses.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No hay gastos compartidos</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 px-4">
                   {expenses.length === 0 
                     ? "Comienza agregando un gasto compartido para el grupo."
                     : `No hay gastos en ${selectedCurrency}. Selecciona otra moneda o agrega un gasto.`
@@ -501,42 +499,44 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
               <div className="space-y-4">
                 {filteredExpenses.map((expense) => (
                   <div key={expense.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-medium text-gray-900">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                          <h4 className="text-lg font-medium text-gray-900 truncate pr-2">
                             {expense.description}
                           </h4>
-                          <span className="text-xl font-bold text-gray-900">
+                          <span className="text-xl font-bold text-gray-900 mt-1 sm:mt-0">
                             {formatCurrency(expense.amount, expense.currency)}
                           </span>
                         </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <div className="mt-2 flex flex-wrap items-center text-sm text-gray-500 gap-2">
                           <span className="bg-gray-100 rounded-full px-2 py-1 text-xs">
                             {expense.category.name}
                           </span>
-                          <span className="mx-2">•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>{(() => {
                             const [year, month, day] = expense.date.split('T')[0].split('-')
                             return `${day}/${month}/${year}`
                           })()}</span>
-                          <span className="mx-2">•</span>
-                          <span>Pagado por: {expense.paid_by_email}</span>
+                          <span className="hidden sm:inline">•</span>
+                          <span className="break-all">Pagado por: {expense.paid_by_email}</span>
                         </div>
                         <div className="mt-2 text-sm text-gray-600">
                           {formatCurrency(expense.amount / currentGroupMembers.length, expense.currency)} por persona
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="flex items-center space-x-3 mt-3 sm:mt-0 sm:ml-4 self-start">
                         <button
                           onClick={() => setEditingExpense(expense)}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-indigo-600 hover:text-indigo-900 p-1"
+                          title="Editar gasto"
                         >
                           <Edit3 className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 p-1"
+                          title="Eliminar gasto"
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
