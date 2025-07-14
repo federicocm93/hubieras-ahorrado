@@ -121,49 +121,63 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center flex-col sm:flex-row">
-            <Image src="/logo.png" alt="Logo" width={400} height={100} className="h-[100px] w-[400px]" />
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">👋 Bienvenido, {user?.email}</span>
-              <button
-                onClick={() => setShowNotifications(true)}
-                className="relative text-gray-500 hover:text-gray-700"
-              >
-                <Bell className="h-6 w-6" />
-                {unreadNotifications > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {unreadNotifications}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => router.push('/groups')}
-                onMouseEnter={() => prefetchGroups()}
-                className="text-gray-500 hover:text-gray-700"
-                title="Mis Grupos"
-              >
-                <Users className="h-6 w-6" />
-              </button>
-              <button
-                onClick={signOut}
-                className="flex items-center space-x-2 text-gray-500 hover:text-gray-700"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Cerrar sesión</span>
-              </button>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 space-y-4 sm:space-y-0">
+            <div className="flex justify-center sm:justify-start">
+              <Image 
+                src="/logo.png" 
+                alt="Logo" 
+                width={400} 
+                height={100} 
+                className="h-[60px] w-[240px] sm:h-[80px] sm:w-[320px] lg:h-[100px] lg:w-[400px]" 
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
+              <span className="text-xs sm:text-sm text-gray-500 text-center truncate max-w-full">
+                👋 Bienvenido, {user?.email}
+              </span>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setShowNotifications(true)}
+                  className="relative text-gray-500 hover:text-gray-700 p-2"
+                  title="Notificaciones"
+                >
+                  <Bell className="h-6 w-6" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadNotifications}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => router.push('/groups')}
+                  onMouseEnter={() => prefetchGroups()}
+                  className="text-gray-500 hover:text-gray-700 p-2"
+                  title="Mis Grupos"
+                >
+                  <Users className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={signOut}
+                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 p-2"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Cerrar sesión</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Summary Card */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
               <h2 className="text-lg font-semibold text-gray-900">📊 Resumen mensual</h2>
               {availableCurrencies.length > 0 && (
-                <div className="w-28">
+                <div className="w-full sm:w-32">
                   <CustomSelect
                     value={selectedCurrency}
                     onChange={setSelectedCurrency}
@@ -184,8 +198,8 @@ export default function Dashboard() {
             {currentMonthMostExpensiveCategory && (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-lg font-semibold text-gray-900">{currentMonthMostExpensiveCategory.category}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-1 space-y-1 sm:space-y-0">
+                  <span className="text-lg font-semibold text-gray-900 truncate">{currentMonthMostExpensiveCategory.category}</span>
                   <span className="text-lg font-bold text-red-600">{formatCurrency(currentMonthMostExpensiveCategory.amount, selectedCurrency)}</span>
                 </div>
               </div>
@@ -214,29 +228,82 @@ export default function Dashboard() {
           </div>
 
           {/* Category Distribution Chart */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Distribución por Categoría</h2>
-            <CategoryPieChart 
-              expenses={filteredExpenses} 
-              month={new Date().getMonth()} 
-              year={new Date().getFullYear()} 
-              currency={selectedCurrency}
-            />
+            <div className="h-64 sm:h-auto">
+              <CategoryPieChart 
+                expenses={filteredExpenses} 
+                month={new Date().getMonth()} 
+                year={new Date().getFullYear()} 
+                currency={selectedCurrency}
+              />
+            </div>
           </div>
 
           {/* Chart */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">📈 Gastos Mensuales</h2>
-            <ExpenseChart expenses={filteredExpenses} currency={selectedCurrency} />
+            <div className="h-64 sm:h-auto">
+              <ExpenseChart expenses={filteredExpenses} currency={selectedCurrency} />
+            </div>
           </div>
         </div>
 
         {/* Recent Expenses */}
-        <div className="mt-8 bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="mt-4 sm:mt-8 bg-white rounded-lg shadow">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">📋 Gastos Recientes</h2>
           </div>
-          <div className="overflow-x-auto">
+          
+          {/* Mobile Card View */}
+          <div className="block sm:hidden">
+            <div className="divide-y divide-gray-200">
+              {expenses.map((expense) => (
+                <div key={expense.id} className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                        {expense.description}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {(() => {
+                          const [year, month, day] = expense.date.split('T')[0].split('-')
+                          return `${day}/${month}/${year}`
+                        })()} • {expense.categories.name}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <button
+                        onClick={() => setEditingExpense(expense)}
+                        className="text-indigo-600 hover:text-indigo-900 p-1"
+                        title="Editar"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteExpense(expense.id)}
+                        className="text-red-600 hover:text-red-900 p-1"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-gray-900">
+                      {formatCurrency(expense.amount, expense.currency)}
+                    </span>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {expense.currency}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -305,19 +372,20 @@ export default function Dashboard() {
         </div>
 
         {/* Categories */}
-        <div className="mt-8 bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="mt-4 sm:mt-8 bg-white rounded-lg shadow">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">🏷️ Categorías</h2>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {categories.map((category) => (
-                <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <span className="text-sm font-medium text-gray-900">{category.name}</span>
+                <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg min-w-0">
+                  <span className="text-sm font-medium text-gray-900 truncate flex-1 mr-2">{category.name}</span>
                   {!category.is_default && (
                     <button
                       onClick={() => deleteCategory(category.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 p-1 flex-shrink-0"
+                      title="Eliminar categoría"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
