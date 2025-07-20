@@ -152,7 +152,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               Monto
             </label>
             <input
-              type="text"
+              type="number"
               id="amount"
               required
               placeholder="0,00"
