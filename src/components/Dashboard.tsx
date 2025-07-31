@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -19,7 +19,7 @@ import { Expense } from '@/stores/types'
 import { usePrefetch } from '@/hooks/usePrefetch'
 import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currencies'
 import CustomSelect from '@/components/ui/CustomSelect'
-import { useGroupTotals } from '@/hooks/useGroupTotals'
+import { useGroupTotalsStore } from '@/stores/groupTotalsStore'
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth()
@@ -115,8 +115,32 @@ export default function Dashboard() {
     }
   }, [availableCurrencies, filteredExpenses.length])
 
-  // Get group totals for the current month and currency
-  const { groupTotals, loading: groupTotalsLoading } = useGroupTotals(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
+  // Get group totals from store
+  const { 
+    groupTotals, 
+    loading: groupTotalsLoading, 
+    fetchGroupTotals 
+  } = useGroupTotalsStore()
+
+  // Track if initial fetch has been done for this user/currency combination
+  const initialFetchDone = useRef(false)
+  const currentFetchKey = useRef<string | null>(null)
+
+  // Fetch group totals when user or currency changes
+  useEffect(() => {
+    if (user?.id) {
+      const currentMonth = new Date().getMonth()
+      const currentYear = new Date().getFullYear()
+      const fetchKey = `${user.id}-${currentMonth}-${currentYear}-${selectedCurrency}`
+      
+      // Only fetch if this is a new combination or we haven't fetched yet
+      if (!initialFetchDone.current || currentFetchKey.current !== fetchKey) {
+        initialFetchDone.current = true
+        currentFetchKey.current = fetchKey
+        fetchGroupTotals(user.id, currentMonth, currentYear, selectedCurrency)
+      }
+    }
+  }, [user?.id, selectedCurrency])
 
 
 
