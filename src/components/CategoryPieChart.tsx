@@ -92,11 +92,13 @@ export default function CategoryPieChart({ expenses, month, year, currency }: Ca
       legend: {
         position: 'bottom' as const,
         labels: {
-          padding: 20,
+          padding: 15,
           usePointStyle: true,
           font: {
-            size: 12
-          }
+            size: 11
+          },
+          boxWidth: 12,
+          boxHeight: 12
         }
       },
       tooltip: {
@@ -114,7 +116,7 @@ export default function CategoryPieChart({ expenses, month, year, currency }: Ca
   }
 
   return (
-    <div className="h-64 relative">
+    <div className="h-96 relative">
       <Pie data={data} options={options} />
     </div>
   )

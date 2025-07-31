@@ -140,7 +140,7 @@ export default function Dashboard() {
         fetchGroupTotals(user.id, currentMonth, currentYear, selectedCurrency)
       }
     }
-  }, [user?.id, selectedCurrency])
+  }, [user?.id, selectedCurrency, fetchGroupTotals])
 
 
 
@@ -285,7 +285,7 @@ export default function Dashboard() {
           {/* Category Distribution Chart */}
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Distribución por Categoría</h2>
-            <div className="h-64 sm:h-auto">
+            <div className="h-96 sm:h-auto">
               <CategoryPieChart 
                 expenses={filteredExpenses} 
                 month={new Date().getMonth()} 
