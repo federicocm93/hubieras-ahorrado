@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3 } from 'lucide-react'
+import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
@@ -72,6 +73,7 @@ interface SharedExpensesProps {
 
 export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const { user } = useAuth()
+  const router = useRouter()
   const { categories, fetchCategories } = useCategoriesStore()
   const [expenses, setExpenses] = useState<SharedExpense[]>([])
   const [loading, setLoading] = useState(true)
@@ -324,10 +326,17 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 <button
                   onClick={onBack}
                   onMouseEnter={() => prefetchGroups()}
-                  className="mr-4 text-gray-500 hover:text-gray-700"
+                  className="mr-3 text-gray-500 hover:text-gray-700"
                   title="Volver a Mis Grupos"
                 >
                   <ArrowLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="mr-4 text-gray-500 hover:text-gray-700"
+                  title="Ir al Dashboard"
+                >
+                  <Home className="h-6 w-6" />
                 </button>
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">

@@ -116,7 +116,7 @@ export default function Dashboard() {
   }, [availableCurrencies, filteredExpenses.length])
 
   // Get group totals for the current month and currency
-  const { groupTotals } = useGroupTotals(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
+  const { groupTotals, loading: groupTotalsLoading } = useGroupTotals(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
 
 
 
@@ -200,18 +200,28 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
             
             {/* Group totals */}
-            {groupTotals.length > 0 && (
+            {(groupTotalsLoading || groupTotals.length > 0) && (
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <p className="text-xs text-gray-400 mb-2">Resumen de gastos por grupo:</p>
                 <div className="space-y-1">
-                  {groupTotals.map((group) => (
-                    <div key={`${group.id}-${group.currency}`} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 truncate flex-1 mr-2">{group.name}</span>
-                      <span className="text-sm font-medium text-gray-800 flex-shrink-0">
-                        {formatCurrency(group.total, group.currency)}
-                      </span>
-                    </div>
-                  ))}
+                  {groupTotalsLoading ? (
+                    // Skeleton loading state
+                    Array.from({ length: 2 }).map((_, index) => (
+                      <div key={index} className="flex justify-between items-center animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded flex-1 mr-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-16 flex-shrink-0"></div>
+                      </div>
+                    ))
+                  ) : (
+                    groupTotals.map((group) => (
+                      <div key={`${group.id}-${group.currency}`} className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 truncate flex-1 mr-2">{group.name}</span>
+                        <span className="text-sm font-medium text-gray-800 flex-shrink-0">
+                          {formatCurrency(group.total, group.currency)}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
