@@ -19,6 +19,7 @@ import { Expense } from '@/stores/types'
 import { usePrefetch } from '@/hooks/usePrefetch'
 import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currencies'
 import CustomSelect from '@/components/ui/CustomSelect'
+import { useGroupTotals } from '@/hooks/useGroupTotals'
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth()
@@ -114,6 +115,9 @@ export default function Dashboard() {
     }
   }, [availableCurrencies, filteredExpenses.length])
 
+  // Get group totals for the current month and currency
+  const { groupTotals } = useGroupTotals(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
+
 
 
 
@@ -194,6 +198,23 @@ export default function Dashboard() {
               {formatCurrency(currentMonthExpenses, selectedCurrency)}
             </div>
             <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
+            
+            {/* Group totals */}
+            {groupTotals.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-400 mb-2">Resumen de gastos por grupo:</p>
+                <div className="space-y-1">
+                  {groupTotals.map((group) => (
+                    <div key={`${group.id}-${group.currency}`} className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 truncate flex-1 mr-2">{group.name}</span>
+                      <span className="text-sm font-medium text-gray-800 flex-shrink-0">
+                        {formatCurrency(group.total, group.currency)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {currentMonthMostExpensiveCategory && (
               <div className="mt-4 pt-4 border-t border-gray-200">
