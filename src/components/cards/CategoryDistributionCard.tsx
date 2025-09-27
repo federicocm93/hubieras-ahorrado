@@ -1,6 +1,6 @@
 'use client'
 
-import CategoryPieChart from '../CategoryPieChart'
+import CategoryPieChart from '../charts/CategoryPieChart'
 import type { Expense } from '@/stores/types'
 import { ChartPie } from 'lucide-react'
 

@@ -1,6 +1,6 @@
 'use client'
 
-import ExpenseChart from '../ExpenseChart'
+import ExpenseChart from '../charts/ExpenseChart'
 import type { Expense } from '@/stores/types'
 import { ChartLine } from 'lucide-react'
 

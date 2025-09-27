@@ -101,7 +101,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                   setPage(1)
                   setPageSize(Number(value))
                 }}
-                options={[5, 10, 20, 50].map(size => ({ value: String(size), label: `${size} por página` }))}
+                options={[5, 10, 20, 50].map(size => ({ value: String(size), label: String(size) }))}
                 placeholder="Tamaño"
               />
             </div>
