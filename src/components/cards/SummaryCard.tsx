@@ -1,6 +1,5 @@
 'use client'
 
-import { Plus } from 'lucide-react'
 import CustomSelect from '@/components/ui/CustomSelect'
 import { formatCurrency } from '@/utils/currencies'
 import type { GroupTotal } from '@/stores/groupTotalsStore'
