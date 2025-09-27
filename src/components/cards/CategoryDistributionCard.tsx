@@ -2,6 +2,7 @@
 
 import CategoryPieChart from '../CategoryPieChart'
 import type { Expense } from '@/stores/types'
+import { ChartPie } from 'lucide-react'
 
 interface CategoryDistributionCardProps {
   expenses: Expense[]
@@ -13,7 +14,10 @@ export default function CategoryDistributionCard({ expenses, currency }: Categor
 
   return (
     <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Distribución por Categoría</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <ChartPie className="w-5 h-5" />
+        Distribución por Categoría
+      </h2>
       <div className="h-96 sm:h-auto">
         <CategoryPieChart
           expenses={expenses}

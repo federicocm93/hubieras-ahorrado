@@ -3,6 +3,7 @@
 import CustomSelect from '@/components/ui/CustomSelect'
 import { formatCurrency } from '@/utils/currencies'
 import type { GroupTotal } from '@/stores/groupTotalsStore'
+import { CalendarRange, TrendingUp, Users, Zap } from 'lucide-react'
 
 interface SummaryCardProps {
   selectedCurrency: string
@@ -42,7 +43,10 @@ export default function SummaryCard({
   return (
     <div className="relative bg-white rounded-lg shadow p-4 sm:p-6">
       <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">📊 Resumen mensual</h2>
+        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <CalendarRange className="w-5 h-5" />
+          Resumen mensual
+        </h2>
         {availableCurrencies.length > 0 && (
             <CustomSelect
               value={selectedCurrency}
@@ -72,7 +76,10 @@ export default function SummaryCard({
 
       {showGroupTotals && (
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-sm text-gray-500 mb-2">Resumen de gastos por grupo:</p>
+          <p className="text-sm text-gray-500 mb-2 flex items-center gap-1">
+            <Users className="w-4 h-4" />
+            Resumen de gastos por grupo:
+          </p>
           <div className="space-y-1">
             {groupTotalsLoading ? (
               Array.from({ length: 2 }).map((_, index) => (
@@ -97,7 +104,10 @@ export default function SummaryCard({
 
       {mostExpensiveCategory && (
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
+          <p className="text-sm text-gray-500 flex items-center gap-1">
+            <TrendingUp className="w-4 h-4" />
+            Categoría con más gastos
+          </p>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-1 space-y-1 sm:space-y-0">
             <span className="text-sm font-bold text-gray-900 truncate">{mostExpensiveCategory.category}</span>
             <span className="text-sm font-bold text-red-600">
@@ -108,7 +118,10 @@ export default function SummaryCard({
       )}
 
       <div className="mt-6 pt-4 border-t border-gray-200">
-        <h3 className="text-sm font-medium text-gray-500 mb-3">⚡ Acciones Rápidas</h3>
+        <h3 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-1">
+          <Zap className="w-4 h-4" />
+          Acciones Rápidas
+        </h3>
         <div className="space-y-2">
           <button
             onClick={onAddExpense}

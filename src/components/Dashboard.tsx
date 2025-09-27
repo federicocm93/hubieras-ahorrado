@@ -19,7 +19,7 @@ import { DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useGroupTotalsStore } from '@/stores/groupTotalsStore'
 import SummaryCard from './cards/SummaryCard'
 import CategoryDistributionCard from './cards/CategoryDistributionCard'
-import MonthlyExpensesCard from './MonthlyExpensesCard'
+import MonthlyExpensesCard from './cards/MonthlyExpensesCard'
 import RecentExpenses from './RecentExpenses'
 import CategoriesCard from './cards/CategoriesCard'
 

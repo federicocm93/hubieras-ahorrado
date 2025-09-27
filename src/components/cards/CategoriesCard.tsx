@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { Trash2, Tags } from 'lucide-react'
 import type { Category } from '@/stores/types'
 
 interface CategoriesCardProps {
@@ -12,7 +12,10 @@ export default function CategoriesCard({ categories, onDeleteCategory }: Categor
   return (
     <div className="mt-4 sm:mt-8 bg-white rounded-lg shadow">
       <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">🏷️ Categorías</h2>
+        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Tags className="w-5 h-5" />
+          Categorías
+        </h2>
       </div>
       <div className="p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">

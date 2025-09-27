@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Edit2, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react'
+import { Edit2, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, List } from 'lucide-react'
 import CustomSelect from '@/components/ui/CustomSelect'
 import { formatCurrency } from '@/utils/currencies'
 import type { Expense } from '@/stores/types'
@@ -41,7 +41,10 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
   return (
     <div className="mt-4 sm:mt-8 bg-white rounded-lg shadow">
       <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">📋 Gastos Recientes</h2>
+        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <List className="w-5 h-5" />
+          Gastos Recientes
+        </h2>
       </div>
 
       <div className="block sm:hidden">
