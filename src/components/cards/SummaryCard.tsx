@@ -41,11 +41,10 @@ export default function SummaryCard({
     amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
+    <div className="relative bg-white rounded-lg shadow p-4 sm:p-6">
+      <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-900">📊 Resumen mensual</h2>
         {availableCurrencies.length > 0 && (
-          <div className="w-full sm:w-32">
             <CustomSelect
               value={selectedCurrency}
               onChange={onCurrencyChange}
@@ -54,8 +53,8 @@ export default function SummaryCard({
                 label: currency,
               }))}
               placeholder="Seleccionar moneda"
+              buttonClassName="mt-0 h-8 py-1 text-sm"
             />
-          </div>
         )}
       </div>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
@@ -116,15 +115,13 @@ export default function SummaryCard({
             onClick={onAddExpense}
             className="w-full flex items-center justify-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm"
           >
-            <Plus className="h-4 w-4" />
-            <span>💸 Agregar Gasto</span>
+            <span>Agregar Gasto</span>
           </button>
           <button
             onClick={onAddCategory}
             className="w-full flex items-center justify-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm"
           >
-            <Plus className="h-4 w-4" />
-            <span>📝 Agregar Categoría</span>
+            <span>Agregar Categoría</span>
           </button>
         </div>
       </div>
