@@ -227,7 +227,6 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               }}
               options={[10, 20, 50, 100].map(size => ({ value: String(size), label: `${size} por página` }))}
               placeholder="Tamaño"
-              buttonClassName='font-normal'
             />
           </div>
           <div className="flex items-center gap-2">
