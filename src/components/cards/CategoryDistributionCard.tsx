@@ -1,6 +1,6 @@
 'use client'
 
-import CategoryPieChart from './CategoryPieChart'
+import CategoryPieChart from '../CategoryPieChart'
 import type { Expense } from '@/stores/types'
 
 interface CategoryDistributionCardProps {

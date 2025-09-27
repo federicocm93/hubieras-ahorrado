@@ -11,6 +11,7 @@ interface SummaryCardProps {
   availableCurrencies: string[]
   currentMonthExpenses: number
   currentDate: string
+  monthlyTotalsByCurrency: { currency: string; total: number }[]
   groupTotals: GroupTotal[]
   groupTotalsLoading: boolean
   mostExpensiveCategory: { category: string; amount: number } | null
@@ -24,6 +25,7 @@ export default function SummaryCard({
   availableCurrencies,
   currentMonthExpenses,
   currentDate,
+  monthlyTotalsByCurrency,
   groupTotals,
   groupTotalsLoading,
   mostExpensiveCategory,
@@ -31,6 +33,12 @@ export default function SummaryCard({
   onAddCategory,
 }: SummaryCardProps) {
   const showGroupTotals = groupTotalsLoading || groupTotals.length > 0
+  const otherCurrencyTotals = monthlyTotalsByCurrency.filter(
+    ({ currency, total }) => currency !== selectedCurrency && total > 0
+  )
+
+  const formatSecondaryCurrency = (amount: number) =>
+    amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
     <div className="bg-white rounded-lg shadow p-4 sm:p-6">
@@ -50,8 +58,17 @@ export default function SummaryCard({
           </div>
         )}
       </div>
-      <div className="text-3xl font-bold text-indigo-600">
-        {formatCurrency(currentMonthExpenses, selectedCurrency)}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+        <div className="text-3xl font-bold text-indigo-600">
+          {formatCurrency(currentMonthExpenses, selectedCurrency)}
+        </div>
+        {otherCurrencyTotals.length > 0 && (
+          <div className="flex flex-col items-start sm:items-end text-xs text-gray-400 leading-tight">
+            {otherCurrencyTotals.map(({ currency, total }) => (
+              <span key={currency}>{`+ ${formatSecondaryCurrency(total)} ${currency}`}</span>
+            ))}
+          </div>
+        )}
       </div>
       <p className="text-sm text-gray-500 mt-2">{currentDate}</p>
 

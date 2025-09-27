@@ -17,11 +17,11 @@ import { Expense } from '@/stores/types'
 import { usePrefetch } from '@/hooks/usePrefetch'
 import { DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useGroupTotalsStore } from '@/stores/groupTotalsStore'
-import SummaryCard from './SummaryCard'
-import CategoryDistributionCard from './CategoryDistributionCard'
+import SummaryCard from './cards/SummaryCard'
+import CategoryDistributionCard from './cards/CategoryDistributionCard'
 import MonthlyExpensesCard from './MonthlyExpensesCard'
 import RecentExpenses from './RecentExpenses'
-import CategoriesCard from './CategoriesCard'
+import CategoriesCard from './cards/CategoriesCard'
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth()
@@ -102,12 +102,20 @@ export default function Dashboard() {
     }
   }
 
-  const currentMonthExpenses = getTotalExpensesByDate(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
-  const currentDate = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  const currentMonthExpenses = getTotalExpensesByDate(currentMonth, currentYear, selectedCurrency)
+  const currentDate = now.toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
   
-  const currentMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(new Date().getMonth(), new Date().getFullYear(), selectedCurrency)
+  const currentMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(currentMonth, currentYear, selectedCurrency)
   
   const availableCurrencies = getAvailableCurrencies()
+  const monthlyTotalsByCurrency = availableCurrencies.map(currency => ({
+    currency,
+    total: getTotalExpensesByDate(currentMonth, currentYear, currency)
+  }))
   const filteredExpenses = expenses.filter(expense => expense.currency === selectedCurrency)
   
   // Auto-select the first available currency if user has expenses but selected currency has no expenses
@@ -131,8 +139,6 @@ export default function Dashboard() {
   // Fetch group totals when user or currency changes
   useEffect(() => {
     if (user?.id) {
-      const currentMonth = new Date().getMonth()
-      const currentYear = new Date().getFullYear()
       const fetchKey = `${user.id}-${currentMonth}-${currentYear}-${selectedCurrency}`
       
       // Only fetch if this is a new combination or we haven't fetched yet
@@ -142,7 +148,7 @@ export default function Dashboard() {
         fetchGroupTotals(user.id, currentMonth, currentYear, selectedCurrency)
       }
     }
-  }, [user?.id, selectedCurrency, fetchGroupTotals])
+  }, [user?.id, selectedCurrency, fetchGroupTotals, currentMonth, currentYear])
 
 
 
@@ -209,6 +215,7 @@ export default function Dashboard() {
             availableCurrencies={availableCurrencies}
             currentMonthExpenses={currentMonthExpenses}
             currentDate={currentDate}
+            monthlyTotalsByCurrency={monthlyTotalsByCurrency}
             groupTotals={groupTotals}
             groupTotalsLoading={groupTotalsLoading}
             mostExpensiveCategory={currentMonthMostExpensiveCategory}
