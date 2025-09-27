@@ -86,12 +86,12 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
           ))}
         </div>
         {/* Mobile pagination controls */}
-        <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <div className="flex items-center text-sm text-gray-600">
             Mostrando {startItem}-{endItem} de {totalItems}
           </div>
-          <div className="flex items-center justify-between sm:justify-end gap-3">
-            <div className="w-32">
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+            <div className="w-24 sm:w-32">
               <CustomSelect
                 value={String(pageSize)}
                 onChange={(value) => {
@@ -102,11 +102,11 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                 placeholder="Tamaño"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => setPage(1)}
                 disabled={page === 1}
-                className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent ${page === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
+                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent ${page === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
                 aria-label="Primera página"
               >
                 <ChevronsLeft className="h-4 w-4" />
@@ -114,18 +114,18 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent ${page === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
+                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent ${page === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
                 aria-label="Página anterior"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-sm text-gray-600">
-                Página {page} de {totalPages}
+              <span className="text-xs sm:text-sm text-gray-600">
+                {page}/{totalPages}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent ${page === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
+                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent ${page === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
                 aria-label="Página siguiente"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -133,7 +133,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <button
                 onClick={() => setPage(totalPages)}
                 disabled={page === totalPages}
-                className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent ${page === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
+                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent ${page === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800'}`}
                 aria-label="Última página"
               >
                 <ChevronsRight className="h-4 w-4" />
@@ -245,7 +245,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <ChevronLeft className="h-4 w-4" />
             </button>
             <span className="text-sm text-gray-600">
-              Página {page} de {totalPages}
+              {page}/{totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
