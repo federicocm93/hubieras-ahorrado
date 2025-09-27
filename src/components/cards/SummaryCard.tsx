@@ -84,7 +84,7 @@ export default function SummaryCard({
             ) : (
               groupTotals.map(group => (
                 <div key={`${group.id}-${group.currency}`} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 truncate flex-1 mr-2">{group.name}</span>
+                  <span className="text-sm font-bold text-gray-900 truncate flex-1 mr-2">{group.name}</span>
                   <span className="text-sm font-medium text-gray-800 flex-shrink-0">
                     {formatCurrency(group.total, group.currency)}
                   </span>
@@ -99,8 +99,8 @@ export default function SummaryCard({
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">🔥 Categoría con más gastos</p>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-1 space-y-1 sm:space-y-0">
-            <span className="text-lg font-semibold text-gray-900 truncate">{mostExpensiveCategory.category}</span>
-            <span className="text-lg font-bold text-red-600">
+            <span className="text-sm font-bold text-gray-900 truncate">{mostExpensiveCategory.category}</span>
+            <span className="text-sm font-bold text-red-600">
               {formatCurrency(mostExpensiveCategory.amount, selectedCurrency)}
             </span>
           </div>
