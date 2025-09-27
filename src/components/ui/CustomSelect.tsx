@@ -40,7 +40,7 @@ export default function CustomSelect({ value, onChange, options, placeholder, bu
       </button>
 
       {isOpen && (
-        <div className="absolute left-1/2 z-10 mt-2 w-max min-w-full -translate-x-1/2 bg-white shadow-lg max-h-60 rounded-md py-1 text-base border border-gray-200 overflow-auto focus:outline-none">
+        <div className="absolute left-1/2 z-50 mt-2 w-max min-w-full -translate-x-1/2 bg-white shadow-lg max-h-60 rounded-md py-1 text-base border border-gray-200 overflow-auto focus:outline-none">
           {options.map((option) => (
             <div
               key={option.value}
