@@ -169,7 +169,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <span className="hidden sm:block text-xs sm:text-sm text-gray-500 text-center truncate max-w-full">
-                👋 Bienvenido, {user?.email}
+                Bienvenido, {user?.email}
               </span>
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button

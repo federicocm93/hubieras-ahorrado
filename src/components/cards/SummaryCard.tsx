@@ -1,6 +1,6 @@
 'use client'
 
-import CustomSelect from '@/components/ui/CustomSelect'
+import CurrencySelect from '@/components/ui/CurrencySelect'
 import { formatCurrency } from '@/utils/currencies'
 import type { GroupTotal } from '@/stores/groupTotalsStore'
 import { CalendarRange, TrendingUp, Users, Zap } from 'lucide-react'
@@ -48,7 +48,7 @@ export default function SummaryCard({
           Resumen mensual
         </h2>
         {availableCurrencies.length > 0 && (
-            <CustomSelect
+            <CurrencySelect
               value={selectedCurrency}
               onChange={onCurrencyChange}
               options={availableCurrencies.map(currency => ({
