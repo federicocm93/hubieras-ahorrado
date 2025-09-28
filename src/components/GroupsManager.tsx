@@ -213,7 +213,7 @@ export default function GroupsManager() {
                   onMouseEnter={() => prefetchDashboardData()}
                   className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-slate-300 rounded-md text-sm font-medium text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <span className="sm:hidden">← Gastos Personales</span>
+                  <span className="sm:hidden">Gastos Personales</span>
                   <span className="hidden sm:inline">Volver a Gastos Personales</span>
                 </button>
                 <button

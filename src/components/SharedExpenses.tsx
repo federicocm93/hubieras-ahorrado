@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Plus, Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
+import { Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import LoadingOverlay from './LoadingOverlay'
 import toast from 'react-hot-toast'
@@ -425,7 +425,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                   onClick={() => setShowAddExpense(true)}
                   className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-400 flex items-center justify-center transition-colors"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
                   Agregar Gasto
                 </button>
               </div>
@@ -555,7 +554,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                     onClick={() => setShowAddExpense(true)}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition-colors"
                   >
-                    <Plus className="h-5 w-5 mr-2" />
                     Agregar Gasto
                   </button>
                 </div>

@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'chart.js'
 import type { ChartOptions } from 'chart.js'
+import annotationPlugin from 'chartjs-plugin-annotation'
 import { useTheme } from '@/contexts/ThemeContext'
 import { Bar } from 'react-chartjs-2'
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns'
@@ -21,7 +22,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  annotationPlugin
 )
 
 interface Expense {
@@ -34,9 +36,10 @@ interface Expense {
 interface ExpenseChartProps {
   expenses: Expense[]
   currency?: string
+  monthlyLimit?: number
 }
 
-export default function ExpenseChart({ expenses, currency }: ExpenseChartProps) {
+export default function ExpenseChart({ expenses, currency, monthlyLimit }: ExpenseChartProps) {
   const { theme } = useTheme()
   const isDarkTheme = theme === 'dark'
   const textColor = isDarkTheme ? 'rgba(226, 232, 240, 0.92)' : '#0f172a'
@@ -98,6 +101,34 @@ export default function ExpenseChart({ expenses, currency }: ExpenseChartProps) 
         bodyColor: textColor,
         titleColor: textColor,
       },
+      // Horizontal line for monthly limit
+      ...(typeof monthlyLimit === 'number' ? {
+        annotation: {
+          annotations: {
+            limitLine: {
+              type: 'line',
+              yMin: monthlyLimit,
+              yMax: monthlyLimit,
+              borderColor: '#ef4444',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              label: {
+                content: `Límite: ${new Intl.NumberFormat('es-ES', {
+                  style: 'currency',
+                  currency: currency || 'USD',
+                  maximumFractionDigits: 0,
+                }).format(monthlyLimit)}`,
+                enabled: true,
+                position: 'end',
+                backgroundColor: '#ef4444',
+                color: '#ffffff',
+                font: { size: 11 },
+                padding: 4,
+              },
+            }
+          }
+        }
+      } : {})
     },
     scales: {
       x: {

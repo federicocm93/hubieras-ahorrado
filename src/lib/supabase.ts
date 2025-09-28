@@ -170,6 +170,30 @@ export type Database = {
           created_at?: string
         }
       }
+      ,
+      monthly_limits: {
+        Row: {
+          user_id: string
+          currency: string
+          amount: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          currency: string
+          amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          currency?: string
+          amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
