@@ -118,7 +118,7 @@ export default function ExpenseChart({ expenses, currency, monthlyLimit }: Expen
                   currency: currency || 'USD',
                   maximumFractionDigits: 0,
                 }).format(monthlyLimit)}`,
-                enabled: true,
+                display: true,
                 position: 'end',
                 backgroundColor: '#ef4444',
                 color: '#ffffff',
