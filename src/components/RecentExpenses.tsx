@@ -81,7 +81,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                 <span className="text-lg font-bold text-gray-900 dark:text-slate-100 transition-colors">
                   {formatCurrency(expense.amount, expense.currency)}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-slate-300 px-2 py-1 rounded transition-colors">
+                <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-800 dark:bg-slate-700 px-2 py-1 rounded transition-colors">
                   {expense.currency}
                 </span>
               </div>
