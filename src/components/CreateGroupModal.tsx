@@ -113,15 +113,15 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
   }
 
   return (
-    <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full text-gray-900">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">
+    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
+      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 shadow-lg transition-colors">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 transition-colors">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
             Crear Grupo
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -129,14 +129,14 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label htmlFor="groupName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="groupName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
               Nombre del Grupo
             </label>
             <input
               type="text"
               id="groupName"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
               placeholder="Ej: Roommates, Viaje a Europa"
@@ -144,14 +144,14 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors">
               Invitar Usuarios (Email)
             </label>
             {inviteEmails.map((email, index) => (
               <div key={index} className="flex items-center space-x-2 mb-2">
                 <input
                   type="email"
-                  className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="flex-1 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                   value={email}
                   onChange={(e) => updateEmail(index, e.target.value)}
                   placeholder="usuario@ejemplo.com"
@@ -160,7 +160,7 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
                   <button
                     type="button"
                     onClick={() => removeEmailField(index)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -170,25 +170,25 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
             <button
               type="button"
               onClick={addEmailField}
-              className="flex items-center text-sm text-indigo-600 hover:text-indigo-800"
+              className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
             >
               <Plus className="h-4 w-4 mr-1" />
               Agregar otro email
             </button>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Creando...' : 'Crear Grupo'}
             </button>

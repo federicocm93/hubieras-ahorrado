@@ -164,9 +164,9 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'group_invitation':
-        return <Users className="h-5 w-5 text-blue-500" />
+        return <Users className="h-5 w-5 text-blue-500 dark:text-blue-400 transition-colors" />
       default:
-        return <Bell className="h-5 w-5 text-gray-500" />
+        return <Bell className="h-5 w-5 text-gray-500 dark:text-gray-300 transition-colors" />
     }
   }
 
@@ -188,15 +188,15 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full text-gray-900 max-h-[80vh] flex flex-col shadow-lg">
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 mx-2">
-          <h2 className="text-lg font-semibold text-gray-900">
+    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
+      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 max-h-[80vh] flex flex-col shadow-lg transition-colors">
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-slate-700 mx-2 transition-colors">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
             Notificaciones
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -206,21 +206,21 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
           {loading ? (
             <div className="flex flex-col items-center justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-              <p className="text-sm text-gray-500 mt-2">Cargando notificaciones...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300 mt-2 transition-colors">Cargando notificaciones...</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center p-8 text-red-500">
               <Bell className="h-12 w-12 mb-4 text-red-300" />
-              <p className="text-center">{error}</p>
+              <p className="text-center text-gray-700 dark:text-gray-200 transition-colors">{error}</p>
               <button
                 onClick={fetchNotifications}
-                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                className="mt-4 px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded hover:bg-indigo-700 dark:hover:bg-indigo-400 transition-colors"
               >
                 Reintentar
               </button>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+            <div className="flex flex-col items-center justify-center p-8 text-gray-500 dark:text-gray-300 transition-colors">
               <Bell className="h-12 w-12 mb-4 text-gray-300" />
               <p>No tienes notificaciones</p>
             </div>
@@ -229,8 +229,10 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border rounded-lg ${
-                    notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'
+                  className={`p-4 border rounded-lg transition-colors ${
+                    notification.read
+                      ? 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700'
+                      : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-500/60'
                   }`}
                 >
                   <div className="flex items-start space-x-3">
@@ -240,18 +242,18 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100 transition-colors">
                             {notification.title}
                           </p>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 transition-colors">
                             {notification.message}
                           </p>
-                          <p className="text-xs text-gray-400 mt-2">
+                          <p className="text-xs text-gray-400 dark:text-gray-300 mt-2 transition-colors">
                             {formatDate(notification.created_at)}
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>
+                          <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full flex-shrink-0 mt-2 transition-colors"></div>
                         )}
                       </div>
 
@@ -263,7 +265,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                               'accepted',
                               notification.data?.group_id || ''
                             )}
-                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-400 transition-colors"
                           >
                             Aceptar
                           </button>
@@ -273,7 +275,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                               'rejected',
                               notification.data?.group_id || ''
                             )}
-                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 transition-colors"
                           >
                             Rechazar
                           </button>
@@ -284,7 +286,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                         <div className="flex justify-end mt-2">
                           <button
                             onClick={() => deleteNotification(notification.id)}
-                            className="text-xs text-gray-400 hover:text-gray-600"
+                            className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
                           >
                             Eliminar
                           </button>

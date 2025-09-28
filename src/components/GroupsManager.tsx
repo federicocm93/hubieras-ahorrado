@@ -190,17 +190,17 @@ export default function GroupsManager() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 py-4 sm:py-8 transition-colors">
       <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+        <div className="bg-white dark:bg-slate-900 rounded-lg shadow transition-colors">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-700 transition-colors">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
-                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 mr-2 sm:mr-3" />
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100 flex items-center transition-colors">
+                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400 mr-2 sm:mr-3 transition-colors" />
                   Mis Grupos
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 transition-colors">
                   Gestiona tus grupos de gastos compartidos
                 </p>
               </div>
@@ -208,14 +208,14 @@ export default function GroupsManager() {
                 <button
                   onClick={() => router.push('/dashboard')}
                   onMouseEnter={() => prefetchDashboardData()}
-                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <span className="sm:hidden">← Gastos Personales</span>
                   <span className="hidden sm:inline">Volver a Gastos Personales</span>
                 </button>
                 <button
                   onClick={() => setShowCreateGroup(true)}
-                  className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
+                  className="w-full sm:w-auto bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-400 flex items-center justify-center transition-colors"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Crear Grupo
@@ -228,20 +228,20 @@ export default function GroupsManager() {
             {/* Pending Invitations Section */}
             {pendingInvitations.length > 0 && (
               <div className="mb-6 sm:mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Invitaciones Pendientes</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Invitaciones Pendientes</h3>
                 <div className="space-y-3">
                   {pendingInvitations.map((invitation) => (
                     <div
                       key={invitation.id}
-                      className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                      className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-500/60 rounded-lg p-4 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                         <div className="flex items-center">
-                          <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
-                            <Users className="h-5 w-5 text-blue-600" />
+                          <div className="bg-blue-100 dark:bg-blue-900/50 rounded-full p-2 flex-shrink-0 transition-colors">
+                            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400 transition-colors" />
                           </div>
                           <div className="ml-3 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 truncate">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate transition-colors">
                               Invitación a &quot;{(() => {
                                 const groups = invitation.groups as unknown
                                 if (Array.isArray(groups) && groups.length > 0) {
@@ -252,7 +252,7 @@ export default function GroupsManager() {
                                 return 'Grupo'
                               })()}&quot;
                             </h4>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 transition-colors">
                               Te han invitado a unirte a este grupo
                             </p>
                           </div>
@@ -264,7 +264,7 @@ export default function GroupsManager() {
                               invitation.group_id,
                               'accepted'
                             )}
-                            className="flex-1 sm:flex-initial px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                            className="flex-1 sm:flex-initial px-3 py-1 bg-green-600 dark:bg-green-500 text-white text-sm rounded hover:bg-green-700 dark:hover:bg-green-400 transition-colors"
                           >
                             Aceptar
                           </button>
@@ -274,7 +274,7 @@ export default function GroupsManager() {
                               invitation.group_id,
                               'rejected'
                             )}
-                            className="flex-1 sm:flex-initial px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                            className="flex-1 sm:flex-initial px-3 py-1 bg-red-600 dark:bg-red-500 text-white text-sm rounded hover:bg-red-700 dark:hover:bg-red-400 transition-colors"
                           >
                             Rechazar
                           </button>
@@ -289,15 +289,15 @@ export default function GroupsManager() {
             {/* Groups Section */}
             {groups.length === 0 && pendingInvitations.length === 0 ? (
               <div className="text-center py-12">
-                <Users className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No tienes grupos</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <Users className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 transition-colors" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100 transition-colors">No tienes grupos</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-300 transition-colors">
                   Crea tu primer grupo para compartir gastos con amigos, familia o compañeros.
                 </p>
                 <div className="mt-6">
                   <button
                     onClick={() => setShowCreateGroup(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition-colors"
                   >
                     <Plus className="h-5 w-5 mr-2" />
                     Crear Grupo
@@ -309,7 +309,7 @@ export default function GroupsManager() {
                 {groups.map((group) => (
                   <div
                     key={group.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
+                    className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer transition-colors"
                     onClick={() => router.push(`/groups/${group.id}`)}
                     onMouseEnter={() => {
                       prefetchGroupDetails(group.id)
@@ -318,11 +318,11 @@ export default function GroupsManager() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center min-w-0 flex-1">
-                        <div className="bg-indigo-100 rounded-full p-2 flex-shrink-0">
-                          <Users className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" />
+                        <div className="bg-indigo-100 dark:bg-indigo-900/40 rounded-full p-2 flex-shrink-0 transition-colors">
+                          <Users className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 dark:text-indigo-400 transition-colors" />
                         </div>
                         <div className="ml-3 min-w-0">
-                          <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-slate-100 truncate transition-colors">
                             {group.name}
                           </h3>
                         </div>
@@ -333,7 +333,7 @@ export default function GroupsManager() {
                             e.stopPropagation()
                             handleLeaveGroup(group.id)
                           }}
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-500 hover:text-red-400 p-1 transition-colors"
                           title="Salir del grupo"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -342,29 +342,29 @@ export default function GroupsManager() {
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 transition-colors">
+                        <Users className="h-4 w-4 mr-2 flex-shrink-0 text-gray-500 dark:text-gray-300 transition-colors" />
                         <span>{group.members.length} miembro{group.members.length !== 1 ? 's' : ''}</span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 transition-colors">
+                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0 text-gray-500 dark:text-gray-300 transition-colors" />
                         <span className="truncate">Creado {formatDate(group.created_at)}</span>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
                       <div className="flex -space-x-2">
                         {group.members.slice(0, 3).map((member) => (
                           <div
                             key={member.id}
-                            className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-indigo-500 text-white text-xs sm:text-sm font-medium border-2 border-white"
+                            className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-indigo-500 text-white text-xs sm:text-sm font-medium border-2 border-white dark:border-slate-900"
                             title={member.user_email}
                           >
                             {member.user_email?.charAt(0).toUpperCase() || 'U'}
                           </div>
                         ))}
                         {group.members.length > 3 && (
-                          <div className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-500 text-white text-xs sm:text-sm font-medium border-2 border-white">
+                          <div className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-500 dark:bg-slate-600 text-white text-xs sm:text-sm font-medium border-2 border-white dark:border-slate-900">
                             +{group.members.length - 3}
                           </div>
                         )}
@@ -372,7 +372,7 @@ export default function GroupsManager() {
                     </div>
 
                     <div className="mt-4">
-                      <button className="w-full text-center text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                      <button className="w-full text-center text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors">
                         <span className="sm:hidden">Ver gastos →</span>
                         <span className="hidden sm:inline">Ver gastos compartidos →</span>
                       </button>

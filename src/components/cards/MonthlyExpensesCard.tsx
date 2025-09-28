@@ -11,8 +11,8 @@ interface MonthlyExpensesCardProps {
 
 export default function MonthlyExpensesCard({ expenses, currency }: MonthlyExpensesCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <div className="rounded-lg shadow p-4 sm:p-6 transition-colors" style={{ background: 'var(--surface)', color: 'var(--foreground)' }}>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2 transition-colors">
         <ChartLine className="w-5 h-5" />
         Gastos Mensuales
       </h2>

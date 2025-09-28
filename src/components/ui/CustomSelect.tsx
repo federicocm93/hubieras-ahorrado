@@ -8,9 +8,10 @@ interface CustomSelectProps {
   onChange: (value: string) => void
   options: { value: string; label: string }[]
   placeholder: string
+  buttonClassName?: string
 }
 
-export default function CustomSelect({ value, onChange, options, placeholder }: CustomSelectProps) {
+export default function CustomSelect({ value, onChange, options, placeholder, buttonClassName }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -32,18 +33,18 @@ export default function CustomSelect({ value, onChange, options, placeholder }: 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="mt-1 relative w-full h-10 border border-gray-300 rounded-md px-3 py-2 text-left text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+        className={`mt-1 relative w-full h-10 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-left focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-800 transition-colors ${buttonClassName ?? 'text-gray-900 dark:text-slate-100'}`}
       >
         <span className="block truncate">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-          <ChevronDown className="h-5 w-5 text-gray-400" />
+          <ChevronDown className="h-5 w-5 text-gray-400 dark:text-gray-300 transition-colors" />
         </span>
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base border border-gray-300 overflow-auto focus:outline-none">
+        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-900 shadow-lg max-h-60 rounded-md py-1 text-base border border-gray-300 dark:border-slate-700 overflow-auto focus:outline-none transition-colors">
           {options.map((option) => (
             <div
               key={option.value}
@@ -53,7 +54,7 @@ export default function CustomSelect({ value, onChange, options, placeholder }: 
                 setIsOpen(false)
               }}
             >
-              <span className={`block truncate ${selectedOption?.value === option.value ? 'text-black' : 'text-gray-400'}`}>{option.label}</span>
+              <span className={`block truncate ${selectedOption?.value === option.value ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-300'}`}>{option.label}</span>
             </div>
           ))}
         </div>

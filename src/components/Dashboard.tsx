@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { LogOut, Bell, Users } from 'lucide-react'
+import { LogOut, Bell, Users, Moon, Sun } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
 import NotificationsPanel from './NotificationsPanel'
@@ -22,10 +22,12 @@ import CategoryDistributionCard from './cards/CategoryDistributionCard'
 import MonthlyExpensesCard from './cards/MonthlyExpensesCard'
 import RecentExpenses from './RecentExpenses'
 import CategoriesCard from './cards/CategoriesCard'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth()
   const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
   
   // Coordinated data synchronization
   const { isLoading: dataLoading, syncData } = useDataSync()
@@ -154,8 +156,8 @@ export default function Dashboard() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen transition-colors" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
+      <header className="shadow-sm transition-colors" style={{ background: 'var(--surface)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex justify-start">
@@ -168,13 +170,26 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <span className="hidden sm:block text-xs sm:text-sm text-gray-500 text-center truncate max-w-full">
+              <span className="hidden sm:block text-xs sm:text-sm text-gray-500 dark:text-gray-500 text-center truncate max-w-full transition-colors">
                 Bienvenido, {user?.email}
               </span>
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
+                  onClick={toggleTheme}
+                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
+                  title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  aria-pressed={theme === 'dark'}
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="h-6 w-6" />
+                  ) : (
+                    <Moon className="h-6 w-6" />
+                  )}
+                </button>
+                <button
                   onClick={() => setShowNotifications(true)}
-                  className="relative text-gray-500 hover:text-gray-700 p-2"
+                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
                   title="Notificaciones"
                 >
                   <Bell className="h-6 w-6" />
@@ -187,14 +202,14 @@ export default function Dashboard() {
                 <button
                   onClick={() => router.push('/groups')}
                   onMouseEnter={() => prefetchGroups()}
-                  className="text-gray-500 hover:text-gray-700 p-2"
+                  className="text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
                   title="Mis Grupos"
                 >
                   <Users className="h-6 w-6" />
                 </button>
                 <button
                   onClick={signOut}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 p-2"
+                  className="flex items-center space-x-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
                   title="Cerrar sesión"
                 >
                   <LogOut className="h-4 w-4" />
@@ -206,7 +221,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Summary Card */}
           <SummaryCard
