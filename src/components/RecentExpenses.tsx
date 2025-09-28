@@ -40,7 +40,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
 
   return (
     <div className="mt-4 sm:mt-8 rounded-lg shadow transition-colors" style={{ background: 'var(--surface)', color: 'var(--foreground)' }}>
-      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-900 transition-colors">
+      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-700 transition-colors">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2 transition-colors">
           <List className="w-5 h-5" />
           Gastos Recientes
@@ -48,7 +48,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
       </div>
 
       <div className="block sm:hidden">
-        <div className="divide-y divide-gray-200 dark:divide-slate-300 transition-colors">
+        <div className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
           {paginatedExpenses.map(expense => (
             <div key={expense.id} className="p-4">
               <div className="flex justify-between items-start mb-2">
@@ -148,7 +148,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
       </div>
 
       <div className="hidden sm:block overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-900 transition-colors">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
           <thead className="transition-colors" style={{ background: 'var(--surface)' }}>
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
@@ -171,7 +171,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-slate-800 transition-colors" style={{ background: 'var(--surface)' }}>
+          <tbody className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors" style={{ background: 'var(--surface)' }}>
             {paginatedExpenses.map(expense => (
               <tr key={expense.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
