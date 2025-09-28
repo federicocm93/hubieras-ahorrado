@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCategoriesStore } from '@/stores/categoriesStore'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface AddCategoryModalProps {
   onClose: () => void
@@ -16,6 +17,20 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
   const { addCategory } = useCategoriesStore()
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
+  const { theme } = useTheme()
+  const subtleBorderColor = useMemo(() => theme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(100, 116, 139, 0.2)', [theme])
+  const overlayStyle = useMemo(() => ({
+    backgroundColor: theme === 'dark' ? 'rgba(2, 6, 23, 0.85)' : 'rgba(15, 23, 42, 0.12)',
+    color: 'var(--foreground)'
+  }), [theme])
+  const modalStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
+  const headerStyle = useMemo(() => ({ background: 'var(--background)', borderColor: subtleBorderColor }), [subtleBorderColor])
+  const dividerStyle = useMemo(() => ({ borderColor: subtleBorderColor }), [subtleBorderColor])
+  const inputStyle = useMemo(() => ({
+    background: 'var(--background)',
+    color: 'var(--foreground)',
+    borderColor: subtleBorderColor
+  }), [subtleBorderColor])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,15 +55,20 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
   }
 
   return (
-    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
-      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 shadow-lg transition-colors">
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-slate-700 mx-2 transition-colors">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
+    <div
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors"
+      style={overlayStyle}
+    >
+      <div className="rounded-lg max-w-md w-full shadow-lg transition-colors" style={modalStyle}>
+        <div className="flex items-center justify-between p-3 border-b mx-2 transition-colors" style={headerStyle}>
+          <h2 className="text-lg font-semibold">
             Agregar Nueva Categoría
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            className="p-1 opacity-60 hover:opacity-100 transition-opacity"
+            style={{ color: 'var(--foreground)' }}
+            aria-label="Cerrar modal"
           >
             <X className="h-6 w-6" />
           </button>
@@ -60,18 +80,20 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
               type="text"
               id="name"
               required
-              className="mt-1 block w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="mt-1 block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              style={inputStyle}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ingresa el nombre de la categoría"
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
+          <div className="flex justify-end space-x-3 pt-4 border-t transition-colors" style={dividerStyle}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 border rounded-md text-sm font-medium transition-colors"
+              style={{ borderColor: subtleBorderColor, color: 'var(--foreground)' }}
             >
               Cancelar
             </button>

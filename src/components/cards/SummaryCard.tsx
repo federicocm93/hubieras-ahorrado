@@ -1,7 +1,10 @@
 'use client'
 
+import { useMemo } from 'react'
+
+import AnimatedCurrency from '@/components/ui/AnimatedCurrency'
+import AnimatedNumber from '@/components/ui/AnimatedNumber'
 import CurrencySelect from '@/components/ui/CurrencySelect'
-import { formatCurrency } from '@/utils/currencies'
 import type { GroupTotal } from '@/stores/groupTotalsStore'
 import { CalendarRange, TrendingUp, Users, Zap } from 'lucide-react'
 
@@ -40,6 +43,11 @@ export default function SummaryCard({
   const formatSecondaryCurrency = (amount: number) =>
     amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+  const otherTotalsFormat = useMemo<Intl.NumberFormatOptions>(() => ({
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }), [])
+
   return (
     <div className="relative rounded-lg shadow p-4 sm:p-6 transition-colors" style={{ background: 'var(--surface)', color: 'var(--foreground)' }}>
       <div className="mb-4 flex justify-between items-center">
@@ -61,13 +69,25 @@ export default function SummaryCard({
         )}
       </div>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-        <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-          {formatCurrency(currentMonthExpenses, selectedCurrency)}
-        </div>
+        <AnimatedCurrency
+          amount={currentMonthExpenses}
+          currency={selectedCurrency}
+          className="block text-3xl font-bold text-indigo-600 dark:text-indigo-400"
+          numberClassName="block"
+        />
         {otherCurrencyTotals.length > 0 && (
           <div className="flex flex-col items-start sm:items-end text-xs text-gray-700 font-semibold dark:text-gray-300 leading-tight transition-colors">
             {otherCurrencyTotals.map(({ currency, total }) => (
-              <span key={currency}>{`+ ${formatSecondaryCurrency(total)} ${currency}`}</span>
+              <AnimatedNumber
+                key={currency}
+                value={total}
+                locale="es-ES"
+                format={otherTotalsFormat}
+                prefix="+ "
+                suffix={` ${currency}`}
+                className="block"
+                fallback={`+ ${formatSecondaryCurrency(total)} ${currency}`}
+              />
             ))}
           </div>
         )}
@@ -92,9 +112,11 @@ export default function SummaryCard({
               groupTotals.map(group => (
                 <div key={`${group.id}-${group.currency}`} className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate flex-1 mr-2 transition-colors">{group.name}</span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200 flex-shrink-0 transition-colors">
-                    {formatCurrency(group.total, group.currency)}
-                  </span>
+                  <AnimatedCurrency
+                    amount={group.total}
+                    currency={group.currency}
+                    className="text-sm font-medium text-gray-800 dark:text-gray-200 flex-shrink-0 transition-colors"
+                  />
                 </div>
               ))
             )}
@@ -110,9 +132,11 @@ export default function SummaryCard({
           </p>
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate transition-colors">{mostExpensiveCategory.category}</span>
-            <span className="text-sm font-medium text-red-600 dark:text-red-400 transition-colors">
-              {formatCurrency(mostExpensiveCategory.amount, selectedCurrency)}
-            </span>
+            <AnimatedCurrency
+              amount={mostExpensiveCategory.amount}
+              currency={selectedCurrency}
+              className="text-sm font-medium text-red-600 dark:text-red-400 transition-colors"
+            />
           </div>
         </div>
       )}

@@ -86,7 +86,7 @@ export function formatCurrency(amount: number, currency: string): string {
 }
 
 // Get appropriate locale for currency formatting
-function getLocaleForCurrency(currency: string): string {
+export function getLocaleForCurrency(currency: string): string {
   const localeMap: Record<string, string> = {
     'USD': 'en-US',
     'EUR': 'es-ES',

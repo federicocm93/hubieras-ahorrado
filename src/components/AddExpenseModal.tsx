@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { X } from 'lucide-react'
@@ -9,6 +9,7 @@ import CustomSelect from '@/components/ui/CustomSelect'
 import { useExpensesStore } from '@/stores/expensesStore'
 import { Category, Expense, GroupMember } from '@/stores/types'
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface AddExpenseModalProps {
   categories: Category[]
@@ -31,6 +32,20 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [paidBy, setPaidBy] = useState('')
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [loading, setLoading] = useState(false)
+  const { theme } = useTheme()
+  const subtleBorderColor = useMemo(() => theme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(100, 116, 139, 0.2)', [theme])
+  const overlayStyle = useMemo(() => ({
+    backgroundColor: theme === 'dark' ? 'rgba(2, 6, 23, 0.85)' : 'rgba(15, 23, 42, 0.12)',
+    color: 'var(--foreground)'
+  }), [theme])
+  const modalStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
+  const headerStyle = useMemo(() => ({ background: 'var(--background)', borderColor: subtleBorderColor }), [subtleBorderColor])
+  const dividerStyle = useMemo(() => ({ borderColor: subtleBorderColor }), [subtleBorderColor])
+  const inputStyle = useMemo(() => ({
+    background: 'var(--background)',
+    color: 'var(--foreground)',
+    borderColor: subtleBorderColor
+  }), [subtleBorderColor])
 
   useEffect(() => {
     if (expense) {
@@ -132,15 +147,20 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   }
 
   return (
-    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
-      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 shadow-lg transition-colors">
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-slate-700 mx-2 transition-colors">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
+    <div
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors"
+      style={overlayStyle}
+    >
+      <div className="rounded-lg max-w-md w-full shadow-lg transition-colors" style={modalStyle}>
+        <div className="flex items-center justify-between p-3 border-b mx-2 transition-colors" style={headerStyle}>
+          <h2 className="text-lg font-semibold">
             {expense ? 'Editar Gasto' : 'Agregar Nuevo Gasto'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            className="p-1 opacity-60 hover:opacity-100 transition-opacity"
+            style={{ color: 'var(--foreground)' }}
+            aria-label="Cerrar modal"
           >
             <X className="h-6 w-6" />
           </button>
@@ -148,7 +168,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
 
         <form onSubmit={handleSubmit} className="p-3 space-y-4">
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+            <label htmlFor="amount" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Monto
             </label>
             <input
@@ -156,7 +176,8 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               id="amount"
               required
               placeholder="0,00"
-              className="mt-1 block w-full h-10 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="mt-1 block w-full h-10 border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              style={inputStyle}
               value={amount}
               onChange={(e) => {
                 let value = e.target.value
@@ -179,21 +200,22 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+            <label htmlFor="description" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Descripción
             </label>
             <input
               type="text"
               id="description"
               required
-              className="mt-1 block w-full h-10 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="mt-1 block w-full h-10 border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              style={inputStyle}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+            <label htmlFor="category" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Categoría
             </label>
             <CustomSelect
@@ -201,11 +223,12 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               onChange={setCategoryId}
               options={categories.map(category => ({ value: category.id, label: category.name }))}
               placeholder="Selecciona una categoría"
+              buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
             />
           </div>
 
           <div>
-            <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+            <label htmlFor="currency" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Moneda
             </label>
             <CustomSelect
@@ -216,12 +239,13 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
                 label: `${curr.symbol} ${curr.code} - ${curr.name}` 
               }))}
               placeholder="Selecciona una moneda"
+              buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
             />
           </div>
 
           {groupId && groupMembers && (
             <div>
-              <label htmlFor="paidBy" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+              <label htmlFor="paidBy" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
                 Pagado por
               </label>
               <CustomSelect
@@ -232,29 +256,32 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
                   label: `${member.user_email || 'Usuario desconocido'}${member.user_id === user?.id ? ' (Tú)' : ''}` 
                 }))}
                 placeholder="Selecciona quién pagó"
+                buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
               />
             </div>
           )}
 
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+            <label htmlFor="date" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Fecha
             </label>
             <input
               type="date"
               id="date"
               required
-              className="mt-1 block w-full h-10 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="mt-1 block w-full h-10 border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              style={inputStyle}
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
+          <div className="flex justify-end space-x-3 pt-4 border-t transition-colors" style={dividerStyle}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 border rounded-md text-sm font-medium transition-colors"
+              style={{ borderColor: subtleBorderColor, color: 'var(--foreground)' }}
             >
               Cancelar
             </button>
