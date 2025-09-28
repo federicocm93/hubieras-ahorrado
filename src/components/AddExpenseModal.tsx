@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import CustomSelect from '@/components/ui/CustomSelect'
+import AmountInput, { formatAmountValue } from '@/components/ui/AmountInput'
 import { useExpensesStore } from '@/stores/expensesStore'
 import { Category, Expense, GroupMember } from '@/stores/types'
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
@@ -26,6 +27,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const { user } = useAuth()
   const { addExpense, updateExpense } = useExpensesStore()
   const [amount, setAmount] = useState('')
+  const [amountValue, setAmountValue] = useState<number | null>(null)
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [date, setDate] = useState('')
@@ -49,13 +51,16 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
 
   useEffect(() => {
     if (expense) {
-      setAmount(expense.amount.toString().replace('.', ','))
+      setAmount(formatAmountValue(expense.amount, { allowDecimals: true, maxFractionDigits: 2 }))
+      setAmountValue(expense.amount)
       setDescription(expense.description)
       setCategoryId(expense.category_id)
       setDate(expense.date)
       setCurrency(expense.currency || DEFAULT_CURRENCY)
       setPaidBy((expense as { paid_by?: string }).paid_by || '')
     } else {
+      setAmount('')
+      setAmountValue(null)
       setDate(new Date().toISOString().split('T')[0])
       setCurrency(DEFAULT_CURRENCY)
       setPaidBy(user?.id || '')
@@ -67,7 +72,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     if (!user) return
 
     // Basic validation
-    if (!amount.trim()) {
+    if (amountValue === null) {
       toast.error('Por favor ingresa un monto')
       return
     }
@@ -85,20 +90,17 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     setLoading(true)
 
     try {
-      // Clean and parse the amount
-      const cleanAmount = amount.trim().replace(',', '.')
-      const parsedAmount = parseFloat(cleanAmount)
-      
-      console.log('Amount input:', amount, 'Cleaned:', cleanAmount, 'Parsed:', parsedAmount)
-      
-      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      // Validate parsed amount
+      console.log('Amount input:', amount, 'Parsed:', amountValue)
+
+      if (isNaN(amountValue) || amountValue <= 0) {
         toast.error('Por favor ingresa un monto válido')
         setLoading(false)
         return
       }
       
       const expenseData = {
-        amount: parsedAmount,
+        amount: amountValue,
         description,
         category_id: categoryId,
         user_id: user.id,
@@ -171,30 +173,18 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             <label htmlFor="amount" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Monto
             </label>
-            <input
-              type="number"
+            <AmountInput
               id="amount"
               required
+              allowDecimals
+              maxFractionDigits={2}
               placeholder="0,00"
               className="mt-1 block w-full h-10 border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               style={inputStyle}
               value={amount}
-              onChange={(e) => {
-                let value = e.target.value
-                
-                // Remove all non-digit, non-comma, non-dot characters
-                value = value.replace(/[^\d,\.]/g, '')
-                
-                // Convert dots to commas (in case user types dot)
-                value = value.replace(/\./g, ',')
-                
-                // Allow only one comma
-                const commaIndex = value.indexOf(',')
-                if (commaIndex !== -1) {
-                  value = value.substring(0, commaIndex + 1) + value.substring(commaIndex + 1).replace(/,/g, '')
-                }
-                
-                setAmount(value)
+              onValueChange={(displayValue, numericValue) => {
+                setAmount(displayValue)
+                setAmountValue(numericValue)
               }}
             />
           </div>
