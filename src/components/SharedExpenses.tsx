@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -24,6 +24,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js'
+import { useTheme } from '@/contexts/ThemeContext'
 
 ChartJS.register(
   CategoryScale,
@@ -74,6 +75,7 @@ interface SharedExpensesProps {
 export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const { user } = useAuth()
   const router = useRouter()
+  const { theme } = useTheme()
   const { categories, fetchCategories } = useCategoriesStore()
   const [expenses, setExpenses] = useState<SharedExpense[]>([])
   const [loading, setLoading] = useState(true)
@@ -84,6 +86,11 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const initialFetchDone = useRef(false)
   const currentGroupId = useRef<string | null>(null)
   const { prefetchGroups } = usePrefetch()
+  const isDarkMode = theme === 'dark'
+
+  const themedPageStyle = useMemo(() => ({ background: 'var(--background)', color: 'var(--foreground)' }), [])
+  const themedCardStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
+  const themedSectionStyle = useMemo(() => ({ background: 'var(--background)' }), [])
 
   const fetchSharedExpensesData = useCallback(async () => {
     if (!user) return
@@ -169,9 +176,9 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   }
 
   const getBalanceColor = (balance: number) => {
-    if (balance > 0) return 'text-green-600'
-    if (balance < 0) return 'text-red-600'
-    return 'text-gray-900'
+    if (balance > 0) return 'text-green-600 dark:text-green-400'
+    if (balance < 0) return 'text-red-600 dark:text-red-400'
+    return 'text-gray-900 dark:text-slate-100'
   }
 
   const getMemberEmail = (userId: string) => {
@@ -244,7 +251,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         data: Object.values(categoryTotals),
         backgroundColor: colors.slice(0, Object.keys(categoryTotals).length),
         borderWidth: 2,
-        borderColor: '#fff'
+        borderColor: isDarkMode ? '#0f172a' : '#ffffff'
       }]
     }
   }
@@ -270,7 +277,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         label: `Total Gastos (${selectedCurrency})`,
         data: sortedMonths.map(month => monthlyTotals[month]),
         borderColor: '#4F46E5',
-        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+        backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.25)' : 'rgba(79, 70, 229, 0.1)',
         tension: 0.1,
         fill: true
       }]
@@ -305,45 +312,94 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const monthlyData = getMonthlyData()
   const topSpender = getTopSpenderThisMonth()
 
-  const chartOptions = {
+  const chartPalette = useMemo(() => {
+    const textColor = isDarkMode ? '#e2e8f0' : '#1f2937'
+    const gridColor = isDarkMode ? 'rgba(148, 163, 184, 0.25)' : 'rgba(209, 213, 219, 0.5)'
+    const tooltipBackground = isDarkMode ? '#0f172a' : '#ffffff'
+    const tooltipBorder = isDarkMode ? 'rgba(148, 163, 184, 0.35)' : 'rgba(107, 114, 128, 0.2)'
+
+    return { textColor, gridColor, tooltipBackground, tooltipBorder }
+  }, [isDarkMode])
+
+  const pieOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'bottom' as const,
+        labels: {
+          color: chartPalette.textColor,
+        },
+      },
+      tooltip: {
+        backgroundColor: chartPalette.tooltipBackground,
+        titleColor: chartPalette.textColor,
+        bodyColor: chartPalette.textColor,
+        borderColor: chartPalette.tooltipBorder,
+        borderWidth: 1,
       },
     },
-  }
+  }), [chartPalette])
+
+  const lineOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: chartPalette.textColor,
+        },
+      },
+      tooltip: {
+        backgroundColor: chartPalette.tooltipBackground,
+        titleColor: chartPalette.textColor,
+        bodyColor: chartPalette.textColor,
+        borderColor: chartPalette.tooltipBorder,
+        borderWidth: 1,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: chartPalette.textColor },
+        grid: { color: chartPalette.gridColor },
+      },
+      y: {
+        ticks: { color: chartPalette.textColor },
+        grid: { color: chartPalette.gridColor },
+      },
+    },
+  }), [chartPalette])
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+    <div className="min-h-screen py-4 sm:py-8 transition-colors" style={themedPageStyle}>
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 transition-colors">
+        <div className="rounded-lg shadow transition-colors" style={themedCardStyle}>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors">
             <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="flex items-center">
                 <button
                   onClick={onBack}
                   onMouseEnter={() => prefetchGroups()}
-                  className="mr-3 text-gray-500 hover:text-gray-700"
+                  className="mr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                   title="Volver a Mis Grupos"
                 >
                   <ArrowLeft className="h-6 w-6" />
                 </button>
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="mr-4 text-gray-500 hover:text-gray-700"
+                  className="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                   title="Ir al Dashboard"
                 >
                   <Home className="h-6 w-6" />
                 </button>
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
-                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 mr-2 sm:mr-3" />
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100 flex items-center transition-colors">
+                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400 mr-2 sm:mr-3 transition-colors" />
                     {group.name}
                   </h1>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors">
                     {currentGroupMembers.length} miembro{currentGroupMembers.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -351,7 +407,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 {availableCurrencies.length > 0 && (
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600 whitespace-nowrap">Moneda:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap transition-colors">Moneda:</span>
                     <div className="w-full sm:w-28">
                       <CustomSelect
                         value={selectedCurrency}
@@ -367,7 +423,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 )}
                 <button
                   onClick={() => setShowAddExpense(true)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
+                  className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-400 flex items-center justify-center transition-colors"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Agregar Gasto
@@ -377,17 +433,17 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           </div>
 
           {/* Balances Section */}
-          <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Balances</h3>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors" style={themedSectionStyle}>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Balances</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentGroupMembers.map(member => (
-                <div key={member.user_id} className="bg-white p-4 rounded-lg border">
+                <div key={member.user_id} className="p-4 rounded-lg border border-gray-200 dark:border-slate-600 transition-colors" style={themedCardStyle}>
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate transition-colors">
                         {getMemberEmail(member.user_id)}
                         {member.user_id === user?.id && (
-                          <span className="text-xs text-gray-500 ml-1">(Tú)</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 transition-colors">(Tú)</span>
                         )}
                       </p>
                       <p className={`text-lg font-bold ${getBalanceColor(currencySpecificBalances[member.user_id] || 0)}`}>
@@ -397,10 +453,10 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                     <DollarSign className={`h-6 w-6 flex-shrink-0 ml-2 ${getBalanceColor(currencySpecificBalances[member.user_id] || 0)}`} />
                   </div>
                   {currencySpecificBalances[member.user_id] > 0 && (
-                    <p className="text-xs text-green-600 mt-1">Le deben dinero</p>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1 transition-colors">Le deben dinero</p>
                   )}
                   {currencySpecificBalances[member.user_id] < 0 && (
-                    <p className="text-xs text-red-600 mt-1">Debe dinero</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1 transition-colors">Debe dinero</p>
                   )}
                 </div>
               ))}
@@ -409,21 +465,21 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
           {/* Analytics Section */}
           {filteredExpenses.length > 0 && (
-            <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b">
-              <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
-                <BarChart3 className="h-6 w-6 mr-2 text-indigo-600" />
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors" style={themedSectionStyle}>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-6 flex items-center transition-colors">
+                <BarChart3 className="h-6 w-6 mr-2 text-indigo-600 dark:text-indigo-400 transition-colors" />
                 Análisis de Gastos
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* Category Pie Chart */}
-                <div className="bg-white p-4 rounded-lg border">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Gastos por Categoría</h4>
+                <div className="p-4 rounded-lg border border-gray-200 dark:border-slate-600 transition-colors" style={themedCardStyle}>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Gastos por Categoría</h4>
                   <div className="h-48 sm:h-64">
                     {categoryData.labels.length > 0 ? (
-                      <Pie data={categoryData} options={chartOptions} />
+                      <Pie data={categoryData} options={pieOptions} />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
+                      <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 transition-colors">
                         No hay datos para mostrar
                       </div>
                     )}
@@ -431,13 +487,13 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 </div>
 
                 {/* Monthly Trend Chart */}
-                <div className="bg-white p-4 rounded-lg border">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Tendencia Mensual</h4>
+                <div className="p-4 rounded-lg border border-gray-200 dark:border-slate-600 transition-colors" style={themedCardStyle}>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Tendencia Mensual</h4>
                   <div className="h-48 sm:h-64">
                     {monthlyData.labels.length > 0 ? (
-                      <Line data={monthlyData} options={chartOptions} />
+                      <Line data={monthlyData} options={lineOptions} />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
+                      <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 transition-colors">
                         No hay datos para mostrar
                       </div>
                     )}
@@ -445,9 +501,9 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 </div>
 
                 {/* Top Spender This Month */}
-                <div className="bg-white p-4 rounded-lg border md:col-span-2 xl:col-span-1">
-                  <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
+                <div className="p-4 rounded-lg border border-gray-200 dark:border-slate-600 transition-colors md:col-span-2 xl:col-span-1" style={themedCardStyle}>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-slate-100 mb-4 flex items-center transition-colors">
+                    <TrendingUp className="h-5 w-5 mr-2 text-green-600 dark:text-green-400 transition-colors" />
                     Mayor Gasto del Mes
                   </h4>
                   <div className="flex flex-col items-center justify-center h-40 sm:h-48">
@@ -456,23 +512,23 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                         <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3 mx-auto">
                           <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                         </div>
-                        <p className="text-sm font-medium text-gray-900 px-2 w-full">
+                        <p className="text-sm font-medium text-gray-900 dark:text-slate-100 px-2 w-full transition-colors">
                           {topSpender.email}
                           {topSpender.isCurrentUser && (
-                            <span className="text-xs text-gray-500 block">(Tú)</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 block transition-colors">(Tú)</span>
                           )}
                         </p>
-                        <p className="text-lg font-bold text-indigo-600 mt-2">
+                        <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-2 transition-colors">
                           {formatCurrency(topSpender.amount, selectedCurrency)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                           Total gastado este mes
                         </p>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center text-center text-gray-500">
-                        <TrendingUp className="h-8 w-8 sm:h-12 sm:w-12 mb-3 text-gray-400" />
-                        <p className="text-sm">No hay gastos este mes</p>
+                      <div className="flex flex-col items-center text-center text-gray-500 dark:text-gray-400 transition-colors">
+                        <TrendingUp className="h-8 w-8 sm:h-12 sm:w-12 mb-3 text-gray-400 dark:text-gray-500 transition-colors" />
+                        <p className="text-sm transition-colors">No hay gastos este mes</p>
                       </div>
                     )}
                   </div>
@@ -482,13 +538,13 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
           )}
 
           {/* Expenses List */}
-          <div className="px-4 sm:px-6 py-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Gastos Compartidos</h3>
+          <div className="px-4 sm:px-6 py-4 transition-colors">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Gastos Compartidos</h3>
             {filteredExpenses.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No hay gastos compartidos</h3>
-                <p className="mt-1 text-sm text-gray-500 px-4">
+              <div className="text-center py-12 transition-colors">
+                <Users className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 transition-colors" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100 transition-colors">No hay gastos compartidos</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 px-4 transition-colors">
                   {expenses.length === 0 
                     ? "Comienza agregando un gasto compartido para el grupo."
                     : `No hay gastos en ${selectedCurrency}. Selecciona otra moneda o agrega un gasto.`
@@ -497,7 +553,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                 <div className="mt-6">
                   <button
                     onClick={() => setShowAddExpense(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition-colors"
                   >
                     <Plus className="h-5 w-5 mr-2" />
                     Agregar Gasto
@@ -507,44 +563,44 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
             ) : (
               <div className="space-y-4">
                 {filteredExpenses.map((expense) => (
-                  <div key={expense.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div key={expense.id} className="border border-gray-200 dark:border-slate-600 rounded-lg p-4 transition-colors" style={themedCardStyle}>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                          <h4 className="text-lg font-medium text-gray-900 truncate pr-2">
+                          <h4 className="text-lg font-medium text-gray-900 dark:text-slate-100 truncate pr-2 transition-colors">
                             {expense.description}
                           </h4>
-                          <span className="text-xl font-bold text-gray-900 mt-1 sm:mt-0">
+                          <span className="text-xl font-bold text-gray-900 dark:text-slate-100 mt-1 sm:mt-0 transition-colors">
                             {formatCurrency(expense.amount, expense.currency)}
                           </span>
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center text-sm text-gray-500 gap-2">
-                          <span className="bg-gray-100 rounded-full px-2 py-1 text-xs">
+                        <div className="mt-2 flex flex-wrap items-center text-sm text-gray-500 dark:text-gray-400 gap-2 transition-colors">
+                          <span className="bg-gray-100 dark:bg-slate-800 dark:text-gray-200 rounded-full px-2 py-1 text-xs transition-colors">
                             {expense.category.name}
                           </span>
-                          <span className="hidden sm:inline">•</span>
-                          <span>{(() => {
+                          <span className="hidden sm:inline transition-colors">•</span>
+                          <span className="transition-colors">{(() => {
                             const [year, month, day] = expense.date.split('T')[0].split('-')
                             return `${day}/${month}/${year}`
                           })()}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="break-all">Pagado por: {expense.paid_by_email}</span>
+                          <span className="hidden sm:inline transition-colors">•</span>
+                          <span className="break-all transition-colors">Pagado por: {expense.paid_by_email}</span>
                         </div>
-                        <div className="mt-2 text-sm text-gray-600">
+                        <div className="mt-2 text-sm text-gray-600 dark:text-gray-300 transition-colors">
                           {formatCurrency(expense.amount / currentGroupMembers.length, expense.currency)} por persona
                         </div>
                       </div>
                       <div className="flex items-center space-x-3 mt-3 sm:mt-0 sm:ml-4 self-start">
                         <button
                           onClick={() => setEditingExpense(expense)}
-                          className="text-indigo-600 hover:text-indigo-900 p-1"
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 transition-colors"
                           title="Editar gasto"
                         >
                           <Edit3 className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 transition-colors"
                           title="Eliminar gasto"
                         >
                           <Trash2 className="h-5 w-5" />

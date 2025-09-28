@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Bell, X, Users } from 'lucide-react'
@@ -31,6 +31,8 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const panelStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
+  const headerStyle = useMemo(() => ({ background: 'var(--background)' }), [])
 
   useEffect(() => {
     if (isOpen && user) {
@@ -161,14 +163,14 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
     }
   }
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'group_invitation':
-        return <Users className="h-5 w-5 text-blue-500 dark:text-blue-400 transition-colors" />
-      default:
-        return <Bell className="h-5 w-5 text-gray-500 dark:text-gray-300 transition-colors" />
-    }
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'group_invitation':
+      return <Users className="h-5 w-5 text-gray-600 dark:text-gray-200 transition-colors" />
+    default:
+      return <Bell className="h-5 w-5 text-gray-600 dark:text-gray-200 transition-colors" />
   }
+}
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -189,8 +191,8 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
 
   return (
     <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
-      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 max-h-[80vh] flex flex-col shadow-lg transition-colors">
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-slate-700 mx-2 transition-colors">
+      <div className="rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 max-h-[80vh] flex flex-col shadow-lg transition-colors" style={panelStyle}>
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-slate-700 mx-2 transition-colors" style={headerStyle}>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
             Notificaciones
           </h2>
@@ -231,8 +233,8 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                   key={notification.id}
                   className={`p-4 border rounded-lg transition-colors ${
                     notification.read
-                      ? 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700'
-                      : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-500/60'
+                      ? 'bg-gray-100 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700'
+                      : 'bg-gray-200 dark:bg-slate-800 border-gray-300 dark:border-slate-600'
                   }`}
                 >
                   <div className="flex items-start space-x-3">
@@ -253,7 +255,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full flex-shrink-0 mt-2 transition-colors"></div>
+                          <div className="w-2 h-2 bg-gray-600 dark:bg-gray-300 rounded-full flex-shrink-0 mt-2 transition-colors"></div>
                         )}
                       </div>
 

@@ -1,5 +1,8 @@
+'use client'
+
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
 export interface GroupTotal {
   id: string
@@ -26,6 +29,29 @@ interface GroupTotalsStore {
 }
 
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+const getThemedToastStyle = () => {
+  if (typeof window === 'undefined') {
+    return undefined
+  }
+
+  const root = window.document.documentElement
+  const computed = window.getComputedStyle(root)
+  const surface = computed.getPropertyValue('--surface')?.trim()
+  const foreground = computed.getPropertyValue('--foreground')?.trim()
+  const isDark = root.classList.contains('dark')
+
+  return {
+    background: surface && surface.length > 0 ? surface : isDark ? '#0f172a' : '#ffffff',
+    color: foreground && foreground.length > 0 ? foreground : isDark ? '#e2e8f0' : '#0f172a',
+    border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+  }
+}
+
+const notifyGroupTotalsError = (message: string) => {
+  const style = getThemedToastStyle()
+  toast.error(message, style ? { style } : undefined)
+}
 
 export const useGroupTotalsStore = create<GroupTotalsStore>((set, get) => ({
   groupTotals: [],
@@ -81,6 +107,7 @@ export const useGroupTotalsStore = create<GroupTotalsStore>((set, get) => ({
     const timeoutId = setTimeout(() => {
       console.log('⚠️ Group totals fetch timeout - forcing loading to false')
       set({ loading: false, error: 'Timeout al cargar totales de grupos' })
+      notifyGroupTotalsError('Timeout al cargar totales de grupos')
     }, 15000) // 15 seconds timeout
 
     try {
@@ -126,6 +153,7 @@ export const useGroupTotalsStore = create<GroupTotalsStore>((set, get) => ({
         loading: false, 
         error: errorMessage 
       })
+      notifyGroupTotalsError('Error al cargar totales de grupos: ' + errorMessage)
     }
   },
 

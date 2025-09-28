@@ -40,7 +40,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
 
   return (
     <div className="mt-4 sm:mt-8 rounded-lg shadow transition-colors" style={{ background: 'var(--surface)', color: 'var(--foreground)' }}>
-      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors">
+      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-900 transition-colors">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2 transition-colors">
           <List className="w-5 h-5" />
           Gastos Recientes
@@ -103,7 +103,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                 }}
                 options={[5, 10, 20, 50].map(size => ({ value: String(size), label: String(size) }))}
                 placeholder="Tamaño"
-                buttonClassName="text-white bg-gray-800"
+                buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
               />
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
@@ -148,25 +148,25 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
       </div>
 
       <div className="hidden sm:block overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800 transition-colors">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-900 transition-colors">
           <thead className="transition-colors" style={{ background: 'var(--surface)' }}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Fecha
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Descripción
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Categoría
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Monto
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Moneda
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Acciones
               </th>
             </tr>
@@ -228,7 +228,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               }}
               options={[10, 20, 50, 100].map(size => ({ value: String(size), label: `${size} por página` }))}
               placeholder="Tamaño"
-              buttonClassName="text-white bg-gray-800"
+              buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
             />
           </div>
           <div className="flex items-center gap-2">

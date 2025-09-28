@@ -33,7 +33,11 @@ export default function CustomSelect({ value, onChange, options, placeholder, bu
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`mt-1 relative w-full h-10 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-left focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-800 transition-colors ${buttonClassName ?? 'text-gray-900 dark:text-slate-100'}`}
+        className={`mt-1 relative w-full h-10 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-left focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+          buttonClassName 
+            ? `${buttonClassName}` 
+            : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100'
+        }`}
       >
         <span className="block truncate">
           {selectedOption ? selectedOption.label : placeholder}
