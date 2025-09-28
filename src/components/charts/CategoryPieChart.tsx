@@ -2,6 +2,8 @@
 
 import { Pie } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, TooltipItem } from 'chart.js'
+import type { ChartOptions } from 'chart.js'
+import { useTheme } from '@/contexts/ThemeContext'
 import { Expense } from '@/stores/types'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -42,6 +44,10 @@ const generateColors = (count: number): string[] => {
 }
 
 export default function CategoryPieChart({ expenses, month, year, currency }: CategoryPieChartProps) {
+  const { theme } = useTheme()
+  const isDarkTheme = theme === 'dark'
+  const textColor = isDarkTheme ? 'rgba(226, 232, 240, 0.92)' : '#0f172a'
+
   const filteredExpenses = expenses.filter(expense => {
     const expenseDate = new Date(expense.date)
     const dateMatches = expenseDate.getMonth() === month && expenseDate.getFullYear() === year
@@ -85,7 +91,7 @@ export default function CategoryPieChart({ expenses, month, year, currency }: Ca
     ]
   }
 
-  const options = {
+  const options: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -98,10 +104,14 @@ export default function CategoryPieChart({ expenses, month, year, currency }: Ca
             size: 11
           },
           boxWidth: 12,
-          boxHeight: 12
+          boxHeight: 12,
+          color: textColor
         }
       },
       tooltip: {
+        backgroundColor: isDarkTheme ? 'rgba(15, 23, 42, 0.85)' : undefined,
+        bodyColor: textColor,
+        titleColor: textColor,
         callbacks: {
           label: function(context: TooltipItem<'pie'>) {
             const label = context.label || ''

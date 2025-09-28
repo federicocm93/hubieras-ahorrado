@@ -10,6 +10,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import type { ChartOptions } from 'chart.js'
+import { useTheme } from '@/contexts/ThemeContext'
 import { Bar } from 'react-chartjs-2'
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns'
 
@@ -35,6 +37,10 @@ interface ExpenseChartProps {
 }
 
 export default function ExpenseChart({ expenses, currency }: ExpenseChartProps) {
+  const { theme } = useTheme()
+  const isDarkTheme = theme === 'dark'
+  const textColor = isDarkTheme ? 'rgba(226, 232, 240, 0.92)' : '#0f172a'
+
   const chartData = useMemo(() => {
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
@@ -75,9 +81,9 @@ export default function ExpenseChart({ expenses, currency }: ExpenseChartProps) 
         },
       ],
     }
-  }, [expenses])
+  }, [expenses, currency])
 
-  const options = {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -87,11 +93,22 @@ export default function ExpenseChart({ expenses, currency }: ExpenseChartProps) 
       title: {
         display: false,
       },
+      tooltip: {
+        backgroundColor: isDarkTheme ? 'rgba(15, 23, 42, 0.85)' : undefined,
+        bodyColor: textColor,
+        titleColor: textColor,
+      },
     },
     scales: {
+      x: {
+        ticks: {
+          color: textColor,
+        },
+      },
       y: {
         beginAtZero: true,
         ticks: {
+          color: textColor,
           callback: function(value: string | number) {
             return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 0 }).format(Number(value))
           }
