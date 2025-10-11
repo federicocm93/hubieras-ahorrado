@@ -11,6 +11,8 @@ import { useExpensesStore } from '@/stores/expensesStore'
 import { Category, Expense, GroupMember } from '@/stores/types'
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useTheme } from '@/contexts/ThemeContext'
+import ExpenseNameSuggestions from './ExpenseNameSuggestions'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface AddExpenseModalProps {
   categories: Category[]
@@ -34,6 +36,8 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [paidBy, setPaidBy] = useState('')
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [loading, setLoading] = useState(false)
+  const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<string[]>([])
+  const debouncedDescription = useDebounce(description, 300)
   const { theme } = useTheme()
   const subtleBorderColor = useMemo(() => theme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(100, 116, 139, 0.2)', [theme])
   const overlayStyle = useMemo(() => ({
@@ -48,6 +52,39 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     color: 'var(--foreground)',
     borderColor: subtleBorderColor
   }), [subtleBorderColor])
+
+  // Fetch unique expense names for autocomplete
+  useEffect(() => {
+    const fetchExpenseNames = async () => {
+      if (!user) return
+
+      try {
+        // Fetch distinct expense descriptions for the user
+        const { data, error } = await supabase
+          .from('expenses')
+          .select('description')
+          .eq('user_id', user.id)
+
+        if (error) throw error
+
+        // Extract unique descriptions (trim and case-sensitive deduplication)
+        const uniqueDescriptions = Array.from(
+          new Set(
+            (data || [])
+              .map(exp => exp.description?.trim())
+              .filter(desc => desc && desc.length > 0)
+          )
+        ).sort()
+
+        setExpenseNameSuggestions(uniqueDescriptions)
+      } catch (error) {
+        console.error('Error fetching expense names:', error)
+        // Silently fail - autocomplete is not critical
+      }
+    }
+
+    fetchExpenseNames()
+  }, [user])
 
   useEffect(() => {
     if (expense) {
@@ -201,6 +238,11 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               style={inputStyle}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+            />
+            <ExpenseNameSuggestions
+              suggestions={expenseNameSuggestions}
+              currentInput={debouncedDescription}
+              onSelect={(name) => setDescription(name)}
             />
           </div>
 
