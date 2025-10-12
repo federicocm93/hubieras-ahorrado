@@ -345,7 +345,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         borderColor: chartPalette.tooltipBorder,
         borderWidth: 1,
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { label?: string; parsed?: number; dataset: { data: number[] } }) {
             const label = context.label || ''
             const value = context.parsed || 0
             const dataset = context.dataset
