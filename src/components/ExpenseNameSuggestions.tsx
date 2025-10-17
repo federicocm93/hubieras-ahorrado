@@ -4,8 +4,8 @@ import { useMemo } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 
 interface ExpenseNameSuggestionsProps {
-  suggestions: string[]
-  onSelect: (name: string) => void
+  suggestions: Array<{ description: string; categoryId: string }>
+  onSelect: (name: string, categoryId: string) => void
   currentInput: string
 }
 
@@ -26,11 +26,18 @@ export default function ExpenseNameSuggestions({ suggestions, onSelect, currentI
     // Filter suggestions that include the current input (case-insensitive)
     const input = currentInput.toLowerCase()
     const filtered = suggestions
-      .filter(suggestion => suggestion.toLowerCase().includes(input))
-      .filter(suggestion => suggestion.toLowerCase() !== input) // Don't show exact matches
+      .filter(suggestion => suggestion.description.toLowerCase().includes(input))
+      .filter(suggestion => suggestion.description.toLowerCase() !== input) // Don't show exact matches
 
-    // Ensure uniqueness (case-sensitive) and limit to 8 suggestions
-    return Array.from(new Set(filtered)).slice(0, 8)
+    // Ensure uniqueness by description (case-sensitive) and limit to 8 suggestions
+    const seen = new Set<string>()
+    return filtered.filter(suggestion => {
+      if (seen.has(suggestion.description)) {
+        return false
+      }
+      seen.add(suggestion.description)
+      return true
+    }).slice(0, 8)
   }, [suggestions, currentInput])
 
   if (filteredSuggestions.length === 0) {
@@ -45,13 +52,13 @@ export default function ExpenseNameSuggestions({ suggestions, onSelect, currentI
       <div className="flex flex-wrap gap-2">
         {filteredSuggestions.map((suggestion) => (
           <button
-            key={suggestion}
+            key={suggestion.description}
             type="button"
-            onClick={() => onSelect(suggestion)}
+            onClick={() => onSelect(suggestion.description, suggestion.categoryId)}
             className="px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-105 hover:shadow-sm"
             style={pillStyle}
           >
-            {suggestion}
+            {suggestion.description}
           </button>
         ))}
       </div>

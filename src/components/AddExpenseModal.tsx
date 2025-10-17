@@ -37,7 +37,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [paidBy, setPaidBy] = useState('')
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [loading, setLoading] = useState(false)
-  const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<string[]>([])
+  const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<Array<{ description: string; categoryId: string }>>([])
   const debouncedDescription = useDebounce(description, 300)
 
   // State for group selection (when availableGroups is provided)
@@ -64,24 +64,31 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       if (!user) return
 
       try {
-        // Fetch distinct expense descriptions for the user
+        // Fetch distinct expense descriptions with their most recent category for the user
         const { data, error } = await supabase
           .from('expenses')
-          .select('description')
+          .select('description, category_id')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
 
         if (error) throw error
 
-        // Extract unique descriptions (trim and case-sensitive deduplication)
-        const uniqueDescriptions = Array.from(
-          new Set(
-            (data || [])
-              .map(exp => exp.description?.trim())
-              .filter(desc => desc && desc.length > 0)
-          )
-        ).sort()
+        // Create a map to store the most recent category for each description
+        const descriptionMap = new Map<string, string>()
 
-        setExpenseNameSuggestions(uniqueDescriptions)
+        ;(data || []).forEach(exp => {
+          const trimmedDesc = exp.description?.trim()
+          if (trimmedDesc && trimmedDesc.length > 0 && !descriptionMap.has(trimmedDesc)) {
+            descriptionMap.set(trimmedDesc, exp.category_id)
+          }
+        })
+
+        // Convert to array and sort
+        const suggestions = Array.from(descriptionMap.entries())
+          .map(([description, categoryId]) => ({ description, categoryId }))
+          .sort((a, b) => a.description.localeCompare(b.description))
+
+        setExpenseNameSuggestions(suggestions)
       } catch (error) {
         console.error('Error fetching expense names:', error)
         // Silently fail - autocomplete is not critical
@@ -305,7 +312,10 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             <ExpenseNameSuggestions
               suggestions={expenseNameSuggestions}
               currentInput={debouncedDescription}
-              onSelect={(name) => setDescription(name)}
+              onSelect={(name, categoryId) => {
+                setDescription(name)
+                setCategoryId(categoryId)
+              }}
             />
           </div>
 
