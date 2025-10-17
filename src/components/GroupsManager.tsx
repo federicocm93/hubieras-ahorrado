@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Users, Plus, Trash2, Calendar } from 'lucide-react'
 import CreateGroupModal from './CreateGroupModal'
 import LoadingOverlay from './LoadingOverlay'
+import TopBar from './TopBar'
 import toast from 'react-hot-toast'
 import { usePrefetch } from '@/hooks/usePrefetch'
 
@@ -193,8 +194,9 @@ export default function GroupsManager() {
 
 
   return (
-    <div className="min-h-screen py-4 sm:py-8 transition-colors" style={themedPageStyle}>
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 transition-colors">
+    <div className="min-h-screen transition-colors" style={themedPageStyle}>
+      <TopBar />
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
         <div className="rounded-lg shadow transition-colors" style={themedCardStyle}>
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors" style={themedSectionStyle}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">

@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import CustomSelect from '@/components/ui/CustomSelect'
 import AmountInput, { formatAmountValue } from '@/components/ui/AmountInput'
 import { useExpensesStore } from '@/stores/expensesStore'
-import { Category, Expense, GroupMember } from '@/stores/types'
+import { Category, Expense, GroupMember, Group } from '@/stores/types'
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useTheme } from '@/contexts/ThemeContext'
 import ExpenseNameSuggestions from './ExpenseNameSuggestions'
@@ -21,11 +21,12 @@ interface AddExpenseModalProps {
   onSuccess: () => void
   groupId?: string
   groupMembers?: GroupMember[]
+  availableGroups?: Group[]
 }
 
 
 
-export default function AddExpenseModal({ categories, expense, onClose, onSuccess, groupId, groupMembers }: AddExpenseModalProps) {
+export default function AddExpenseModal({ categories, expense, onClose, onSuccess, groupId, groupMembers, availableGroups }: AddExpenseModalProps) {
   const { user } = useAuth()
   const { addExpense, updateExpense } = useExpensesStore()
   const [amount, setAmount] = useState('')
@@ -38,6 +39,10 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [loading, setLoading] = useState(false)
   const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<string[]>([])
   const debouncedDescription = useDebounce(description, 300)
+
+  // State for group selection (when availableGroups is provided)
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(groupId || '')
+  const [fetchedGroupMembers, setFetchedGroupMembers] = useState<GroupMember[]>(groupMembers || [])
   const { theme } = useTheme()
   const subtleBorderColor = useMemo(() => theme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(100, 116, 139, 0.2)', [theme])
   const overlayStyle = useMemo(() => ({
@@ -86,6 +91,62 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     fetchExpenseNames()
   }, [user])
 
+  // Fetch group members when a group is selected
+  useEffect(() => {
+    const fetchGroupMembers = async () => {
+      // Skip if no group selected (empty string = personal expense) or already have members from props
+      if (!selectedGroupId || groupMembers) {
+        // Clear fetched members if switching back to personal expense
+        if (!selectedGroupId && fetchedGroupMembers.length > 0) {
+          setFetchedGroupMembers([])
+        }
+        return
+      }
+
+      console.log('Fetching members for group:', selectedGroupId)
+
+      try {
+        const { data: session } = await supabase.auth.getSession()
+        if (!session.session) {
+          console.error('No active session')
+          return
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-group-details`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session.access_token}`,
+          },
+          body: JSON.stringify({ groupId: selectedGroupId }),
+        })
+
+        console.log('Response status:', response.status)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('Response error:', errorText)
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('Group details response:', data)
+
+        if (data.error) {
+          throw new Error(data.error)
+        }
+
+        setFetchedGroupMembers(data.members || [])
+        console.log('Members set:', data.members)
+      } catch (error) {
+        console.error('Error fetching group members:', error)
+        toast.error('Error al cargar miembros del grupo')
+      }
+    }
+
+    fetchGroupMembers()
+  }, [selectedGroupId, groupMembers, fetchedGroupMembers.length])
+
   useEffect(() => {
     if (expense) {
       setAmount(formatAmountValue(expense.amount, { allowDecimals: true, maxFractionDigits: 2 }))
@@ -95,14 +156,16 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       setDate(expense.date)
       setCurrency(expense.currency || DEFAULT_CURRENCY)
       setPaidBy((expense as { paid_by?: string }).paid_by || '')
+      setSelectedGroupId(expense.group_id || '')
     } else {
       setAmount('')
       setAmountValue(null)
       setDate(new Date().toISOString().split('T')[0])
       setCurrency(DEFAULT_CURRENCY)
       setPaidBy(user?.id || '')
+      setSelectedGroupId(groupId || '')
     }
-  }, [expense, user])
+  }, [expense, user, groupId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -143,35 +206,35 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
         user_id: user.id,
         date,
         currency,
-        group_id: groupId || null,
-        ...(groupId && {
+        group_id: selectedGroupId || null,
+        ...(selectedGroupId && {
           paid_by: paidBy || user.id
         })
       }
-      
+
       console.log('Expense data to save:', expenseData)
 
       if (expense) {
         // For personal expenses, use the store. For group expenses, use direct API
-        if (!groupId) {
+        if (!selectedGroupId) {
           await updateExpense(expense.id, expenseData)
         } else {
           const { error } = await supabase
             .from('expenses')
             .update(expenseData)
             .eq('id', expense.id)
-          
+
           if (error) throw error
         }
       } else {
         // For personal expenses, use the store. For group expenses, use direct API
-        if (!groupId) {
+        if (!selectedGroupId) {
           await addExpense(expenseData)
         } else {
           const { error } = await supabase
             .from('expenses')
             .insert([expenseData])
-          
+
           if (error) throw error
         }
       }
@@ -246,6 +309,28 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             />
           </div>
 
+          {availableGroups && availableGroups.length > 0 && !groupId && (
+            <div>
+              <label htmlFor="group" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
+                Tipo de Gasto
+              </label>
+              <CustomSelect
+                value={selectedGroupId}
+                onChange={(value) => {
+                  setSelectedGroupId(value)
+                  // Reset paid by when changing group selection
+                  setPaidBy(user?.id || '')
+                }}
+                options={[
+                  { value: '', label: 'Gasto Personal' },
+                  ...availableGroups.map(group => ({ value: group.id, label: `Grupo: ${group.name}` }))
+                ]}
+                placeholder="Selecciona el tipo de gasto"
+                buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
+              />
+            </div>
+          )}
+
           <div>
             <label htmlFor="category" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Categoría
@@ -275,7 +360,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             />
           </div>
 
-          {groupId && groupMembers && (
+          {(selectedGroupId && (groupMembers || fetchedGroupMembers.length > 0)) && (
             <div>
               <label htmlFor="paidBy" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
                 Pagado por
@@ -283,9 +368,9 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               <CustomSelect
                 value={paidBy}
                 onChange={setPaidBy}
-                options={groupMembers.map(member => ({ 
-                  value: member.user_id, 
-                  label: `${member.user_email || 'Usuario desconocido'}${member.user_id === user?.id ? ' (Tú)' : ''}` 
+                options={(groupMembers || fetchedGroupMembers).map(member => ({
+                  value: member.user_id,
+                  label: `${member.user_email || 'Usuario desconocido'}${member.user_id === user?.id ? ' (Tú)' : ''}`
                 }))}
                 placeholder="Selecciona quién pagó"
                 buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"

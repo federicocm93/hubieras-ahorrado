@@ -1,7 +1,13 @@
 'use client'
 
 import { Pie } from 'react-chartjs-2'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, TooltipItem } from 'chart.js'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  TooltipItem
+} from 'chart.js'
 import type { ChartOptions } from 'chart.js'
 import { useTheme } from '@/contexts/ThemeContext'
 import { Expense } from '@/stores/types'

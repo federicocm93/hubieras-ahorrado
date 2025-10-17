@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import LoadingOverlay from './LoadingOverlay'
+import TopBar from './TopBar'
 import toast from 'react-hot-toast'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { usePrefetch } from '@/hooks/usePrefetch'
@@ -390,8 +391,9 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
 
   return (
-    <div className="min-h-screen py-4 sm:py-8 transition-colors" style={themedPageStyle}>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 transition-colors">
+    <div className="min-h-screen transition-colors" style={themedPageStyle}>
+      <TopBar />
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
         {/* Header Card */}
         <div className="rounded-lg shadow mb-4 sm:mb-8 transition-colors" style={themedCardStyle}>
           <div className="px-4 sm:px-6 py-4 transition-colors">

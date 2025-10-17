@@ -2,19 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { LogOut, Bell, Users, Moon, Sun } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import AddCategoryModal from './AddCategoryModal'
-import NotificationsPanel from './NotificationsPanel'
 import LoadingOverlay from './LoadingOverlay'
-import Image from 'next/image'
+import TopBar from './TopBar'
 import { useCategoriesStore } from '@/stores/categoriesStore'
 import { useExpensesStore } from '@/stores/expensesStore'
 import { useDataSync } from '@/hooks/useDataSync'
-import { Expense } from '@/stores/types'
-import { usePrefetch } from '@/hooks/usePrefetch'
+import { Expense, Group } from '@/stores/types'
 import { DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useGroupTotalsStore } from '@/stores/groupTotalsStore'
 import SummaryCard from './cards/SummaryCard'
@@ -22,71 +18,75 @@ import CategoryDistributionCard from './cards/CategoryDistributionCard'
 import MonthlyExpensesCard from './cards/MonthlyExpensesCard'
 import RecentExpenses from './RecentExpenses'
 import CategoriesCard from './cards/CategoriesCard'
-import { useTheme } from '@/contexts/ThemeContext'
 
 export default function Dashboard() {
-  const { user, signOut, loading: authLoading } = useAuth()
-  const router = useRouter()
-  const { theme, toggleTheme } = useTheme()
-  
+  const { user, loading: authLoading } = useAuth()
+
   // Coordinated data synchronization
   const { isLoading: dataLoading, syncData } = useDataSync()
-  
-  // Zustand stores  
-  const { 
-    categories, 
-    deleteCategory: deleteCategoryFromStore 
+
+  // Zustand stores
+  const {
+    categories,
+    deleteCategory: deleteCategoryFromStore
   } = useCategoriesStore()
-  const { 
-    expenses, 
+  const {
+    expenses,
     deleteExpense: deleteExpenseFromStore,
     getTotalExpensesByDate,
     getMostExpensiveCategoryByDate,
     getAvailableCurrencies
   } = useExpensesStore()
-  
+
   // Local state
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY)
-  
-  // Prefetch hook
-  const { prefetchGroups } = usePrefetch()
-  
+  const [userGroups, setUserGroups] = useState<Group[]>([])
+
   // Simple loading state - show loading while auth is loading or data is syncing
   const loading = authLoading || dataLoading
-  
 
-  // Memoized notification fetch to prevent unnecessary re-renders
-  const fetchUnreadNotificationsCount = useCallback(async () => {
+  // Fetch user's groups
+  const fetchUserGroups = useCallback(async () => {
     if (!user) return
-    
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('read', false)
-      
-      if (error) {
-        console.error('Error fetching notifications count:', error)
-      } else {
-        setUnreadNotifications(data?.length || 0)
-      }
-    } catch (error) {
-      console.error('Unexpected error fetching notifications:', error)
-    }
-  }, [user?.id])
 
-  // Initialize data and notifications when user is available
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-user-groups`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      setUserGroups(data.groups || [])
+    } catch (error) {
+      console.error('Error fetching user groups:', error)
+      // Silently fail - group selector is optional
+    }
+  }, [user])
+
+  // Initialize data when user is available
   useEffect(() => {
     if (user) {
-      fetchUnreadNotificationsCount()
+      fetchUserGroups()
     }
-  }, [user, fetchUnreadNotificationsCount])
+  }, [user, fetchUserGroups])
 
   const deleteExpense = async (id: string) => {
     try {
@@ -157,69 +157,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen transition-colors" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
-      <header className="shadow-sm transition-colors" style={{ background: 'var(--surface)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex justify-start">
-              <Image 
-                src="/hubieras-ahorrado.svg" 
-                alt="Logo" 
-                width={400} 
-                height={100} 
-                className="h-[60px] w-[240px] sm:h-[80px] sm:w-[320px] lg:h-[100px] lg:w-[400px]" 
-              />
-            </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <span className="hidden sm:block text-xs sm:text-sm text-gray-500 dark:text-gray-500 text-center truncate max-w-full transition-colors">
-                Bienvenido, {user?.email}
-              </span>
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                <button
-                  onClick={toggleTheme}
-                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
-                  title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                  aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                  aria-pressed={theme === 'dark'}
-                >
-                  {theme === 'dark' ? (
-                    <Sun className="h-6 w-6" />
-                  ) : (
-                    <Moon className="h-6 w-6" />
-                  )}
-                </button>
-                <button
-                  onClick={() => setShowNotifications(true)}
-                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
-                  title="Notificaciones"
-                >
-                  <Bell className="h-6 w-6" />
-                  {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadNotifications}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => router.push('/groups')}
-                  onMouseEnter={() => prefetchGroups()}
-                  className="text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
-                  title="Mis Grupos"
-                >
-                  <Users className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={signOut}
-                  className="flex items-center space-x-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
-                  title="Cerrar sesión"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">Cerrar sesión</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
@@ -263,6 +201,7 @@ export default function Dashboard() {
       {showAddExpense && (
         <AddExpenseModal
           categories={categories}
+          availableGroups={userGroups}
           onClose={() => setShowAddExpense(false)}
           onSuccess={() => {
             setShowAddExpense(false)
@@ -275,6 +214,7 @@ export default function Dashboard() {
         <AddExpenseModal
           categories={categories}
           expense={editingExpense}
+          availableGroups={userGroups}
           onClose={() => setEditingExpense(null)}
           onSuccess={() => {
             setEditingExpense(null)
@@ -292,15 +232,6 @@ export default function Dashboard() {
           }}
         />
       )}
-
-      {/* Notifications Panel */}
-      <NotificationsPanel
-        isOpen={showNotifications}
-        onClose={() => {
-          setShowNotifications(false)
-          fetchUnreadNotificationsCount()
-        }}
-      />
 
       {/* Loading Overlay */}
       <LoadingOverlay isVisible={loading} />
