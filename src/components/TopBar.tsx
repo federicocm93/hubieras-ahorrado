@@ -68,7 +68,7 @@ export default function TopBar() {
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
                   onClick={toggleTheme}
-                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
+                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
                   title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                   aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                   aria-pressed={theme === 'dark'}
@@ -81,7 +81,7 @@ export default function TopBar() {
                 </button>
                 <button
                   onClick={() => setShowNotifications(true)}
-                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
+                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
                   title="Notificaciones"
                 >
                   <Bell className="h-6 w-6" />
@@ -94,14 +94,14 @@ export default function TopBar() {
                 <button
                   onClick={() => router.push('/groups')}
                   onMouseEnter={() => prefetchGroups()}
-                  className="text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
+                  className="text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
                   title="Mis Grupos"
                 >
                   <Users className="h-6 w-6" />
                 </button>
                 <button
                   onClick={signOut}
-                  className="flex items-center space-x-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 p-2 transition-colors"
+                  className="flex items-center space-x-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
                   title="Cerrar sesión"
                 >
                   <LogOut className="h-4 w-4" />

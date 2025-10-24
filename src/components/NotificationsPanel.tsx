@@ -32,7 +32,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const panelStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
-  const headerStyle = useMemo(() => ({ background: 'var(--background)' }), [])
+  const headerStyle = useMemo(() => ({ background: 'var(--surface)' }), [])
 
   useEffect(() => {
     if (isOpen && user) {
