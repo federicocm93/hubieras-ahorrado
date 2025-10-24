@@ -13,6 +13,10 @@ import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useTheme } from '@/contexts/ThemeContext'
 import ExpenseNameSuggestions from './ExpenseNameSuggestions'
 import { useDebounce } from '@/hooks/useDebounce'
+import ReactDatePicker, { registerLocale } from 'react-datepicker'
+import { es } from 'date-fns/locale'
+
+registerLocale('es', es)
 
 interface AddExpenseModalProps {
   categories: Category[]
@@ -34,6 +38,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [date, setDate] = useState('')
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
   const [paidBy, setPaidBy] = useState('')
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [loading, setLoading] = useState(false)
@@ -389,17 +394,33 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
           )}
 
           <div>
-            <label htmlFor="date" className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
+            <label className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>
               Fecha
             </label>
-            <input
-              type="date"
+            <ReactDatePicker
               id="date"
-              required
-              className="mt-1 block w-full h-10 border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              style={inputStyle}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              selected={date ? new Date(date) : null}
+              onChange={(selectedDate) => {
+                setDate(selectedDate ? selectedDate.toISOString().split('T')[0] : '')
+                setIsDatePickerOpen(false)
+              }}
+              dateFormat="dd/MM/yyyy"
+              locale="es"
+              placeholderText="DD/MM/AAAA"
+              calendarClassName="ha-datepicker-calendar"
+              popperClassName="ha-datepicker-popper"
+              wrapperClassName="w-full"
+              open={isDatePickerOpen}
+              onInputClick={() => setIsDatePickerOpen(true)}
+              onClickOutside={() => setIsDatePickerOpen(false)}
+              onCalendarClose={() => setIsDatePickerOpen(false)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setIsDatePickerOpen(true)
+                }
+              }}
+              className="ha-datepicker-input mt-1 block w-full h-10 border rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-[var(--background)] text-[var(--foreground)] border-[rgba(148,163,184,0.25)]"
             />
           </div>
 
