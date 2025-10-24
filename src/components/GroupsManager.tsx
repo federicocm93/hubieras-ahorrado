@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Users, Plus, Trash2, Calendar } from 'lucide-react'
+import { Users, Plus, Trash2, Calendar, ArrowLeft } from 'lucide-react'
 import CreateGroupModal from './CreateGroupModal'
 import LoadingOverlay from './LoadingOverlay'
 import TopBar from './TopBar'
@@ -202,6 +202,14 @@ export default function GroupsManager() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100 flex items-center transition-colors">
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    onMouseEnter={() => prefetchDashboardData()}
+                    className="sm:hidden mr-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full p-1 transition-colors"
+                    aria-label="Volver al inicio"
+                  >
+                    <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </button>
                   <Users className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400 mr-2 sm:mr-3 transition-colors" />
                   Mis Grupos
                 </h1>
