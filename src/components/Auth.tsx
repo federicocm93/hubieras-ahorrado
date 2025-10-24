@@ -11,9 +11,11 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMessage(null)
     setLoading(true)
 
     try {
@@ -36,7 +38,12 @@ export default function Auth() {
         if (error) throw error
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Error desconocido')
+      const message = 'No pudimos iniciar sesión. Verifica tus credenciales e inténtalo nuevamente.'
+      if (isSignUp) {
+        toast.error(error instanceof Error ? error.message : 'Error desconocido')
+      } else {
+        setErrorMessage(message)
+      }
     } finally {
       setLoading(false)
     }
@@ -86,6 +93,9 @@ export default function Auth() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {!isSignUp && errorMessage && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+              )}
             </div>
             {isSignUp && (
               <div>
@@ -118,7 +128,10 @@ export default function Auth() {
             <button
               type="button"
               className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp)
+                setErrorMessage(null)
+              }}
             >
               {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
             </button>
