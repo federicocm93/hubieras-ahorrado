@@ -55,7 +55,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     color: 'var(--foreground)'
   }), [theme])
   const modalStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
-  const headerStyle = useMemo(() => ({ background: 'var(--background)', borderColor: subtleBorderColor }), [subtleBorderColor])
+  const headerStyle = useMemo(() => ({ background: 'var(--surface)', borderColor: subtleBorderColor }), [subtleBorderColor])
   const dividerStyle = useMemo(() => ({ borderColor: subtleBorderColor }), [subtleBorderColor])
   const inputStyle = useMemo(() => ({
     background: 'var(--background)',
