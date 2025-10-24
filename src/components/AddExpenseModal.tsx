@@ -356,6 +356,9 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               options={categories.map(category => ({ value: category.id, label: category.name }))}
               placeholder="Selecciona una categoría"
               buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
+              searchable
+              searchPlaceholder="Buscar categoría..."
+              emptyStateText="Sin categorías disponibles"
             />
           </div>
 
