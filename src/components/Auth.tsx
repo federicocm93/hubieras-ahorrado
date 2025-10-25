@@ -50,22 +50,23 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-950 text-slate-100">
-      <div className="relative flex-1 px-8 py-12 bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50 lg:bg-slate-950 text-slate-100">
+      <div className="lg:hidden flex justify-center px-6 pt-12 pb-6">
+        <Image src="/hubieras-ahorrado.svg" alt="Hubieras Ahorrado Logo" width={520} height={180} className="w-80" />
+      </div>
+      <div className="hidden lg:flex relative flex-1 px-6 py-10 sm:px-10 sm:py-12 bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-50">
           <div className="absolute -top-16 -right-24 w-72 h-72 bg-indigo-500/30 blur-3xl rounded-full"></div>
           <div className="absolute -bottom-20 -left-10 w-64 h-64 bg-cyan-400/30 blur-3xl rounded-full"></div>
         </div>
-        <div className="relative max-w-lg mx-auto lg:mx-0 h-full flex flex-col gap-8 text-left">
-          <div>
-            <Image
-              src="/hubieras-ahorrado.svg"
-              alt="Hubieras Ahorrado Logo"
-              width={320}
-              height={120}
-              className="w-48 md:w-64 lg:w-72"
-            />
-          </div>
+        <div className="relative max-w-lg w-full mx-auto flex flex-col gap-8 text-left">
+          <Image
+            src="/hubieras-ahorrado.svg"
+            alt="Hubieras Ahorrado Logo"
+            width={400}
+            height={140}
+            className="w-48 md:w-64 lg:w-72"
+          />
           <div className="space-y-3 mt-auto pb-4">
             <p className="text-lg md:text-2xl font-semibold text-white max-w-md">
               Organiza tus gastos compartidos sin fricción.
@@ -77,12 +78,12 @@ export default function Auth() {
           </div>
         </div>
       </div>
-      <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-8">
+      <div className="relative z-20 flex flex-1 items-center justify-center bg-gray-50 px-5 py-10 sm:px-8 lg:py-12 text-slate-900">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 space-y-8">
           <div>
-            {isSignUp && <h2 className="text-2xl font-bold text-slate-500 text-center">
-              Crea tu cuenta
-            </h2>}
+            <h2 className="text-2xl font-bold text-slate-500 text-center">
+              {isSignUp ? 'Crea tu cuenta' : 'Bienvenido de nuevo'}
+            </h2>
             {isSignUp && (
               <p className="mt-2 text-center text-sm text-slate-500">
                 Regístrate para empezar a organizar tus gastos con amigos y familia.
@@ -92,6 +93,9 @@ export default function Auth() {
           <form className="space-y-5" onSubmit={handleAuth}>
             <div className="space-y-4">
               <div className="space-y-3">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Email
+                </label>
                 <input
                   id="email"
                   name="email"
@@ -105,6 +109,9 @@ export default function Auth() {
                 />
               </div>
               <div className="space-y-3">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Contraseña
+                </label>
                 <input
                   id="password"
                   name="password"
