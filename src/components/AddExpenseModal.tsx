@@ -18,6 +18,20 @@ import { es } from 'date-fns/locale'
 
 registerLocale('es', es)
 
+// Helper function to format date as YYYY-MM-DD in local timezone (without timezone conversion)
+const formatDateLocal = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// Helper function to parse YYYY-MM-DD string as a Date object at local midnight (not UTC)
+const parseDateLocal = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 interface AddExpenseModalProps {
   categories: Category[]
   expense?: Expense | null
@@ -172,7 +186,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
     } else {
       setAmount('')
       setAmountValue(null)
-      setDate(new Date().toISOString().split('T')[0])
+      setDate(formatDateLocal(new Date()))
       setCurrency(DEFAULT_CURRENCY)
       setPaidBy(user?.id || '')
       setSelectedGroupId(groupId || '')
@@ -402,9 +416,9 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             </label>
             <ReactDatePicker
               id="date"
-              selected={date ? new Date(date) : null}
+              selected={date ? parseDateLocal(date) : null}
               onChange={(selectedDate) => {
-                setDate(selectedDate ? selectedDate.toISOString().split('T')[0] : '')
+                setDate(selectedDate ? formatDateLocal(selectedDate) : '')
                 setIsDatePickerOpen(false)
               }}
               dateFormat="dd/MM/yyyy"

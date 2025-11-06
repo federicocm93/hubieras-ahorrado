@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Edit2, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, List } from 'lucide-react'
+import { Edit2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, List } from 'lucide-react'
 import CustomSelect from '@/components/ui/CustomSelect'
 import { formatCurrency } from '@/utils/currencies'
 import type { Expense } from '@/stores/types'
+import DeleteButtonWithConfirm from './DeleteButtonWithConfirm'
 
 interface RecentExpensesProps {
   expenses: Expense[]
@@ -68,13 +69,12 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
-                  <button
-                    onClick={() => onDeleteExpense(expense.id)}
+                  <DeleteButtonWithConfirm
+                    expenseId={expense.id}
+                    onConfirm={() => onDeleteExpense(expense.id)}
                     className="text-red-600 hover:text-red-900 p-1"
                     title="Eliminar"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  />
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -198,13 +198,12 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
-                    <button
-                      onClick={() => onDeleteExpense(expense.id)}
+                    <DeleteButtonWithConfirm
+                      expenseId={expense.id}
+                      onConfirm={() => onDeleteExpense(expense.id)}
                       className="text-red-600 hover:text-red-500 transition-colors"
                       title="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    />
                   </div>
                 </td>
               </tr>

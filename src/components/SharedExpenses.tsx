@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Edit3, Trash2, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
+import { Edit3, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
+import DeleteButtonWithConfirm from './DeleteButtonWithConfirm'
 import LoadingOverlay from './LoadingOverlay'
 import TopBar from './TopBar'
 import toast from 'react-hot-toast'
@@ -148,10 +149,6 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
   const handleDeleteExpense = async (expenseId: string) => {
     if (!user) return
-
-    if (!confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
-      return
-    }
 
     try {
       const { error } = await supabase
@@ -617,13 +614,12 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                       >
                         <Edit3 className="h-5 w-5" />
                       </button>
-                      <button
-                        onClick={() => handleDeleteExpense(expense.id)}
+                      <DeleteButtonWithConfirm
+                        expenseId={expense.id}
+                        onConfirm={() => handleDeleteExpense(expense.id)}
                         className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 transition-colors"
                         title="Eliminar gasto"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+                      />
                     </div>
                   </div>
                 </div>
