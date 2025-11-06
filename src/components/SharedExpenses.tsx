@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Edit3, DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home } from 'lucide-react'
+import { DollarSign, Users, ArrowLeft, TrendingUp, BarChart3, Home, Edit2, List, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react'
 import AddExpenseModal from './AddExpenseModal'
 import DeleteButtonWithConfirm from './DeleteButtonWithConfirm'
 import LoadingOverlay from './LoadingOverlay'
@@ -85,6 +85,8 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
   const [editingExpense, setEditingExpense] = useState<SharedExpense | null>(null)
   const [currentGroupMembers, setCurrentGroupMembers] = useState<GroupMember[]>([])
   const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const initialFetchDone = useRef(false)
   const currentGroupId = useRef<string | null>(null)
   const { prefetchGroups } = usePrefetch()
@@ -191,6 +193,31 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
   // Filter expenses by selected currency
   const filteredExpenses = expenses.filter(expense => expense.currency === selectedCurrency)
+
+  // Pagination logic
+  const totalItems = filteredExpenses.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+  
+  // Ensure current page stays in bounds if list size changes
+  useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      setPage(totalPages)
+    }
+  }, [page, totalPages])
+
+  const paginatedExpenses = useMemo(() => {
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    return filteredExpenses.slice(start, end)
+  }, [filteredExpenses, page, pageSize])
+
+  const startItem = totalItems === 0 ? 0 : (page - 1) * pageSize + 1
+  const endItem = Math.min(page * pageSize, totalItems)
+
+  const formatDate = (isoDate: string) => {
+    const [year, month, day] = isoDate.split('T')[0].split('-')
+    return `${day}/${month}/${year}`
+  }
 
   // Calculate balances for the selected currency only
   const getCurrencySpecificBalances = () => {
@@ -555,8 +582,14 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         )}
 
         {/* Expenses List Card */}
-        <div className="rounded-lg shadow p-4 sm:p-6 transition-colors" style={themedCardStyle}>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Gastos Compartidos</h3>
+        <div className="mt-4 sm:mt-8 rounded-lg shadow transition-colors" style={themedCardStyle}>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-700 transition-colors">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2 transition-colors">
+              <List className="w-5 h-5" />
+              Gastos Compartidos
+            </h2>
+          </div>
+
           {filteredExpenses.length === 0 ? (
             <div className="text-center py-12 transition-colors">
               <Users className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 transition-colors" />
@@ -577,54 +610,249 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredExpenses.map((expense) => (
-                <div key={expense.id} className="border border-gray-200 dark:border-slate-600 rounded-lg p-4 transition-colors" style={themedCardStyle}>
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                        <h4 className="text-lg font-medium text-gray-900 dark:text-slate-100 truncate pr-2 transition-colors">
-                          {expense.description}
-                        </h4>
-                        <span className="text-xl font-bold text-gray-900 dark:text-slate-100 mt-1 sm:mt-0 transition-colors">
+            <>
+              {/* Mobile view */}
+              <div className="block sm:hidden">
+                <div className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
+                  {paginatedExpenses.map(expense => (
+                    <div key={expense.id} className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate transition-colors">
+                            {expense.description}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors">
+                            {formatDate(expense.date)} • {expense.category.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
+                            Pagado por: {expense.paid_by_email}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
+                            {formatCurrency(expense.amount / currentGroupMembers.length, expense.currency)} por persona
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-4">
+                          <button
+                            onClick={() => setEditingExpense(expense)}
+                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 transition-colors"
+                            title="Editar"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <DeleteButtonWithConfirm
+                            expenseId={expense.id}
+                            onConfirm={() => handleDeleteExpense(expense.id)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 transition-colors"
+                            title="Eliminar"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-gray-900 dark:text-slate-100 transition-colors">
                           {formatCurrency(expense.amount, expense.currency)}
                         </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center text-sm text-gray-500 dark:text-gray-400 gap-2 transition-colors">
-                        <span className="bg-gray-100 dark:bg-slate-800 dark:text-gray-200 rounded-full px-2 py-1 text-xs transition-colors">
-                          {expense.category.name}
+                        <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-800 dark:bg-slate-700 px-2 py-1 rounded transition-colors">
+                          {expense.currency}
                         </span>
-                        <span className="hidden sm:inline transition-colors">•</span>
-                        <span className="transition-colors">{(() => {
-                          const [year, month, day] = expense.date.split('T')[0].split('-')
-                          return `${day}/${month}/${year}`
-                        })()}</span>
-                        <span className="hidden sm:inline transition-colors">•</span>
-                        <span className="break-all transition-colors">Pagado por: {expense.paid_by_email}</span>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-300 transition-colors">
-                        {formatCurrency(expense.amount / currentGroupMembers.length, expense.currency)} por persona
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 mt-3 sm:mt-0 sm:ml-4 self-start">
-                      <button
-                        onClick={() => setEditingExpense(expense)}
-                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 transition-colors"
-                        title="Editar gasto"
-                      >
-                        <Edit3 className="h-5 w-5" />
-                      </button>
-                      <DeleteButtonWithConfirm
-                        expenseId={expense.id}
-                        onConfirm={() => handleDeleteExpense(expense.id)}
-                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 transition-colors"
-                        title="Eliminar gasto"
+                  ))}
+                </div>
+                {/* Mobile pagination controls */}
+                <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-500 transition-colors">
+                    Mostrando {startItem}-{endItem} de {totalItems}
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+                    <div className="w-24 sm:w-32">
+                      <CustomSelect
+                        value={String(pageSize)}
+                        onChange={(value) => {
+                          setPage(1)
+                          setPageSize(Number(value))
+                        }}
+                        options={[5, 10, 20, 50].map(size => ({ value: String(size), label: String(size) }))}
+                        placeholder="Tamaño"
+                        buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
                       />
+                    </div>
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <button
+                        onClick={() => setPage(1)}
+                        disabled={page === 1}
+                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        aria-label="Primera página"
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        aria-label="Página anterior"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-500 transition-colors">
+                        {page}/{totalPages}
+                      </span>
+                      <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        aria-label="Página siguiente"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        disabled={page === totalPages}
+                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        aria-label="Última página"
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
+                  <thead className="transition-colors" style={{ background: 'var(--surface)' }}>
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Fecha
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Descripción
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Categoría
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Monto
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Por persona
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Pagado por
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Moneda
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors" style={{ background: 'var(--surface)' }}>
+                    {paginatedExpenses.map(expense => (
+                      <tr key={expense.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                          {formatDate(expense.date)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                          {expense.description}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                          {expense.category.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-100 transition-colors">
+                          {formatCurrency(expense.amount, expense.currency)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                          {formatCurrency(expense.amount / currentGroupMembers.length, expense.currency)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                          {expense.paid_by_email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                          {expense.currency}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-100 transition-colors">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => setEditingExpense(expense)}
+                              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
+                              title="Editar"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                            <DeleteButtonWithConfirm
+                              expenseId={expense.id}
+                              onConfirm={() => handleDeleteExpense(expense.id)}
+                              className="text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                              title="Eliminar"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Desktop pagination controls */}
+              <div className="hidden sm:flex px-6 py-3 items-center justify-between">
+                <div className="text-sm text-gray-600 dark:text-gray-500 transition-colors">
+                  Mostrando {startItem}-{endItem} de {totalItems}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-40">
+                    <CustomSelect
+                      value={String(pageSize)}
+                      onChange={(value) => {
+                        setPage(1)
+                        setPageSize(Number(value))
+                      }}
+                      options={[10, 20, 50, 100].map(size => ({ value: String(size), label: `${size} por página` }))}
+                      placeholder="Tamaño"
+                      buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage(1)}
+                      disabled={page === 1}
+                      className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                      aria-label="Primera página"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                      aria-label="Página anterior"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="text-sm text-gray-600 dark:text-gray-500 transition-colors">
+                      {page}/{totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                      aria-label="Página siguiente"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setPage(totalPages)}
+                      disabled={page === totalPages}
+                      className={`inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                      aria-label="Última página"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
