@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 
 interface DeleteConfirmPopoverProps {
   isOpen: boolean
-  buttonRef: React.RefObject<HTMLButtonElement>
+  buttonRef: React.RefObject<HTMLButtonElement | null>
   onConfirm: () => void
   onCancel: () => void
 }
