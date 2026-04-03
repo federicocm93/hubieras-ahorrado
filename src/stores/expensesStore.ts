@@ -216,7 +216,7 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
   getTotalExpensesByDate: (month: number, year: number, currency?: string) => {
     return get().expenses.reduce((sum, expense) => {
       const expenseDate = new Date(expense.date)
-      if (expenseDate.getMonth() === month && expenseDate.getFullYear() === year) {
+      if (expenseDate.getUTCMonth() === month && expenseDate.getUTCFullYear() === year) {
         if (currency && expense.currency !== currency) {
           return sum
         }
@@ -229,7 +229,7 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
   getMostExpensiveCategoryByDate: (month: number, year: number, currency?: string) => {
     const filteredExpenses = get().expenses.filter(expense => {
       const expenseDate = new Date(expense.date)
-      const dateMatches = expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+      const dateMatches = expenseDate.getUTCMonth() === month && expenseDate.getUTCFullYear() === year
       const currencyMatches = !currency || expense.currency === currency
       return dateMatches && currencyMatches
     })

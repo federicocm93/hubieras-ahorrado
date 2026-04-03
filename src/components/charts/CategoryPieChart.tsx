@@ -56,7 +56,7 @@ export default function CategoryPieChart({ expenses, month, year, currency }: Ca
 
   const filteredExpenses = expenses.filter(expense => {
     const expenseDate = new Date(expense.date)
-    const dateMatches = expenseDate.getMonth() === month && expenseDate.getFullYear() === year
+    const dateMatches = expenseDate.getUTCMonth() === month && expenseDate.getUTCFullYear() === year
     const currencyMatches = !currency || expense.currency === currency
     return dateMatches && currencyMatches
   })

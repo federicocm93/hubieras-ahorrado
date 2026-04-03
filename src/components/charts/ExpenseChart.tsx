@@ -59,7 +59,8 @@ export default function ExpenseChart({ expenses, currency, monthlyLimit }: Expen
       
       const total = expenses
         .filter(expense => {
-          const expenseDate = new Date(expense.date)
+          const [y, m, d] = expense.date.split('-').map(Number)
+          const expenseDate = new Date(y, m - 1, d)
           const dateMatches = expenseDate >= monthStart && expenseDate <= monthEnd
           const currencyMatches = !currency || expense.currency === currency
           return dateMatches && currencyMatches
