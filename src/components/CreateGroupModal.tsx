@@ -113,8 +113,8 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
   }
 
   return (
-    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
-      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 shadow-lg transition-colors">
+    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto text-gray-900 dark:text-slate-100 shadow-lg transition-colors animate-modal-in">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 transition-colors">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
             Crear Grupo

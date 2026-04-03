@@ -34,26 +34,41 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             {children}
-            <Toaster 
+            <Toaster
               position="top-right"
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: '#363636',
-                  color: '#fff',
+                  background: 'var(--surface)',
+                  color: 'var(--foreground)',
+                  border: '1px solid rgba(148, 163, 184, 0.2)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
                 },
                 success: {
                   duration: 3000,
                   style: {
-                    background: '#10b981',
-                    color: '#fff',
+                    background: 'var(--surface)',
+                    color: 'var(--foreground)',
+                    borderLeft: '4px solid #10b981',
+                  },
+                  iconTheme: {
+                    primary: '#10b981',
+                    secondary: '#fff',
                   },
                 },
                 error: {
                   duration: 5000,
                   style: {
-                    background: '#ef4444',
-                    color: '#fff',
+                    background: 'var(--surface)',
+                    color: 'var(--foreground)',
+                    borderLeft: '4px solid #ef4444',
+                  },
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
                   },
                 },
               }}

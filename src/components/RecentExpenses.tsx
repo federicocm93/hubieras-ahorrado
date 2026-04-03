@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Edit2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, List } from 'lucide-react'
+import { Edit2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, List, Wallet } from 'lucide-react'
 import CustomSelect from '@/components/ui/CustomSelect'
 import { formatCurrency } from '@/utils/currencies'
 import type { Expense } from '@/stores/types'
@@ -40,7 +40,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
   const endItem = Math.min(page * pageSize, totalItems)
 
   return (
-    <div className="mt-4 sm:mt-8 rounded-lg shadow transition-colors" style={{ background: 'var(--surface)', color: 'var(--foreground)' }}>
+    <div className="card mt-4 sm:mt-8">
       <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-700 transition-colors">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2 transition-colors">
           <List className="w-5 h-5" />
@@ -48,8 +48,18 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
         </h2>
       </div>
 
+      {expenses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 animate-slide-up">
+          <Wallet className="h-12 w-12 text-indigo-300 dark:text-indigo-600 mb-4" />
+          <p className="text-base font-medium text-gray-700 dark:text-slate-300 mb-1">Sin gastos todavia</p>
+          <p className="text-sm text-gray-500 dark:text-slate-500 text-center max-w-xs">
+            Agrega tu primer gasto y empieza a tener el control de tus finanzas.
+          </p>
+        </div>
+      ) : (
+      <>
       <div className="block sm:hidden">
-        <div className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
+        <div className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors stagger-children">
           {paginatedExpenses.map(expense => (
             <div key={expense.id} className="p-4">
               <div className="flex justify-between items-start mb-2">
@@ -61,10 +71,10 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                     {formatDate(expense.date)} • {expense.categories.name}
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 ml-4">
+                <div className="flex items-center space-x-1 ml-4">
                   <button
                     onClick={() => onEditExpense(expense)}
-                    className="text-indigo-600 hover:text-indigo-900 p-1"
+                    className="text-indigo-600 hover:text-indigo-900 p-2"
                     title="Editar"
                   >
                     <Edit2 className="h-4 w-4" />
@@ -72,7 +82,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                   <DeleteButtonWithConfirm
                     expenseId={expense.id}
                     onConfirm={() => onDeleteExpense(expense.id)}
-                    className="text-red-600 hover:text-red-900 p-1"
+                    className="text-red-600 hover:text-red-900 p-2"
                     title="Eliminar"
                   />
                 </div>
@@ -110,7 +120,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <button
                 onClick={() => setPage(1)}
                 disabled={page === 1}
-                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                 aria-label="Primera página"
               >
                 <ChevronsLeft className="h-4 w-4" />
@@ -118,7 +128,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                 aria-label="Página anterior"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -129,7 +139,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                 aria-label="Página siguiente"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -137,7 +147,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               <button
                 onClick={() => setPage(totalPages)}
                 disabled={page === totalPages}
-                className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                 aria-label="Última página"
               >
                 <ChevronsRight className="h-4 w-4" />
@@ -149,7 +159,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
 
       <div className="hidden sm:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
-          <thead className="transition-colors" style={{ background: 'var(--surface)' }}>
+          <thead>
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
                 Fecha
@@ -171,7 +181,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors" style={{ background: 'var(--surface)' }}>
+          <tbody className="divide-y divide-gray-200 dark:divide-slate-700 transition-colors stagger-children">
             {paginatedExpenses.map(expense => (
               <tr key={expense.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
@@ -269,6 +279,8 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }

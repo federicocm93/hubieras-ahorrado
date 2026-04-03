@@ -43,12 +43,12 @@ export default function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors"
+      className="fixed inset-0 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto"
       style={overlayStyle}
       onClick={onCancel}
     >
-      <div 
-        className="rounded-lg max-w-md w-full shadow-lg transition-colors" 
+      <div
+        className="rounded-lg max-w-md w-full shadow-lg transition-colors animate-modal-in"
         style={modalStyle}
         onClick={(e) => e.stopPropagation()}
       >
@@ -58,7 +58,7 @@ export default function ConfirmModal({
           </h2>
           <button
             onClick={onCancel}
-            className="p-1 opacity-60 hover:opacity-100 transition-opacity"
+            className="p-2 opacity-60 hover:opacity-100 transition-opacity"
             style={{ color: 'var(--foreground)' }}
             aria-label="Cerrar modal"
           >
@@ -86,7 +86,7 @@ export default function ConfirmModal({
             <button
               type="button"
               onClick={onConfirm}
-              className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${confirmButtonClass} transition-colors`}
+              className={`btn-press px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${confirmButtonClass} transition-colors`}
             >
               {confirmText}
             </button>

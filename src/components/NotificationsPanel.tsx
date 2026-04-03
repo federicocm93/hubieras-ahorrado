@@ -190,8 +190,8 @@ const getNotificationIcon = (type: string) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors">
-      <div className="rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 max-h-[80vh] flex flex-col shadow-lg transition-colors" style={panelStyle}>
+    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto">
+      <div className="rounded-lg max-w-md w-full text-gray-900 dark:text-slate-100 max-h-[80vh] flex flex-col shadow-lg transition-colors animate-modal-in" style={panelStyle}>
         <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-slate-700 mx-2 transition-colors" style={headerStyle}>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
             Notificaciones
@@ -227,7 +227,7 @@ const getNotificationIcon = (type: string) => {
               <p>No tienes notificaciones</p>
             </div>
           ) : (
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 stagger-children">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
@@ -267,7 +267,7 @@ const getNotificationIcon = (type: string) => {
                               'accepted',
                               notification.data?.group_id || ''
                             )}
-                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-400 transition-colors"
+                            className="btn-press px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-400 transition-colors"
                           >
                             Aceptar
                           </button>
@@ -277,7 +277,7 @@ const getNotificationIcon = (type: string) => {
                               'rejected',
                               notification.data?.group_id || ''
                             )}
-                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 transition-colors"
+                            className="btn-press px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 transition-colors"
                           >
                             Rechazar
                           </button>

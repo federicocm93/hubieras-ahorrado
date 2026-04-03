@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { X } from 'lucide-react'
+import { X, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 import CustomSelect from '@/components/ui/CustomSelect'
 import AmountInput, { formatAmountValue } from '@/components/ui/AmountInput'
@@ -56,6 +56,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [paidBy, setPaidBy] = useState('')
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
   const [loading, setLoading] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<Array<{ description: string; categoryId: string }>>([])
   const debouncedDescription = useDebounce(description, 300)
 
@@ -265,28 +266,48 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
         }
       }
 
-      onSuccess()
+      // Show success animation briefly before closing
+      setLoading(false)
+      setShowSuccess(true)
+      const successMessage = expense ? 'Gasto actualizado' : 'Gasto registrado'
+      toast.success(successMessage)
+      setTimeout(() => {
+        onSuccess()
+      }, 600)
     } catch (error) {
       console.error('Error saving expense:', error)
       toast.error('Error al guardar el gasto: ' + (error instanceof Error ? error.message : 'Error desconocido'))
-    } finally {
       setLoading(false)
     }
   }
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors"
+      className="fixed inset-0 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto"
       style={overlayStyle}
     >
-      <div className="rounded-lg max-w-md w-full shadow-lg transition-colors" style={modalStyle}>
+      <div className="rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto shadow-lg transition-colors animate-modal-in relative" style={modalStyle}>
+        {/* Success celebration overlay */}
+        {showSuccess && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center animate-backdrop-in" style={{ background: 'var(--surface)' }}>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center animate-circle-pop">
+                <Check className="w-8 h-8 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
+              </div>
+              <p className="text-sm font-medium text-gray-700 dark:text-slate-300 animate-slide-up">
+                {expense ? 'Gasto actualizado' : 'Gasto registrado'}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between p-3 border-b mx-2 transition-colors" style={headerStyle}>
           <h2 className="text-lg font-semibold">
             {expense ? 'Editar Gasto' : 'Agregar Nuevo Gasto'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 opacity-60 hover:opacity-100 transition-opacity"
+            className="p-2 opacity-60 hover:opacity-100 transition-opacity"
             style={{ color: 'var(--foreground)' }}
             aria-label="Cerrar modal"
           >
@@ -453,7 +474,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
+              className="btn-press px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Guardando...' : expense ? 'Actualizar Gasto' : 'Agregar Gasto'}
             </button>

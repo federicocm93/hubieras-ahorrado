@@ -49,7 +49,7 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="shadow-sm transition-colors" style={{ background: 'var(--surface)' }}>
+      <header className="border-b border-gray-200/60 dark:border-slate-800 transition-colors" style={{ background: 'var(--surface)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <div className="flex justify-start">
@@ -58,7 +58,7 @@ export default function TopBar() {
                 alt="Logo"
                 width={400}
                 height={100}
-                className="h-[60px] w-[240px] sm:h-[80px] sm:w-[320px] lg:h-[100px] lg:w-[400px]"
+                className="h-[44px] w-[160px] sm:h-[70px] sm:w-[280px] lg:h-[90px] lg:w-[360px]"
               />
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
@@ -68,7 +68,7 @@ export default function TopBar() {
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
                   onClick={toggleTheme}
-                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
+                  className="icon-lift relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2"
                   title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                   aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                   aria-pressed={theme === 'dark'}
@@ -81,12 +81,12 @@ export default function TopBar() {
                 </button>
                 <button
                   onClick={() => setShowNotifications(true)}
-                  className="relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
+                  className="icon-lift relative text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2"
                   title="Notificaciones"
                 >
                   <Bell className="h-6 w-6" />
                   {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-badge-bounce font-bold">
                       {unreadNotifications}
                     </span>
                   )}
@@ -94,18 +94,18 @@ export default function TopBar() {
                 <button
                   onClick={() => router.push('/groups')}
                   onMouseEnter={() => prefetchGroups()}
-                  className="text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
+                  className="icon-lift text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2"
                   title="Mis Grupos"
                 >
                   <Users className="h-6 w-6" />
                 </button>
                 <button
                   onClick={signOut}
-                  className="flex items-center space-x-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2 transition-colors"
+                  className="icon-lift flex items-center space-x-2 text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2"
                   title="Cerrar sesión"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">Cerrar sesión</span>
+                  <LogOut className="h-5 w-5 sm:h-4 sm:w-4" />
+                  <span className="hidden md:inline text-sm">Cerrar sesión</span>
                 </button>
               </div>
             </div>

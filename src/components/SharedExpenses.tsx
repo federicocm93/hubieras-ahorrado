@@ -419,7 +419,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
       <TopBar />
       <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
         {/* Header Card */}
-        <div className="rounded-lg shadow mb-4 sm:mb-8 transition-colors" style={themedCardStyle}>
+        <div className="card mb-4 sm:mb-8">
           <div className="px-4 sm:px-6 py-4 transition-colors">
             <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="flex items-center">
@@ -477,7 +477,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         </div>
 
         {/* Balances Card */}
-        <div className="rounded-lg shadow mb-4 sm:mb-8 p-4 sm:p-6 transition-colors" style={themedCardStyle}>
+        <div className="card mb-4 sm:mb-8 p-4 sm:p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4 transition-colors">Balances</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {currentGroupMembers.map(member => (
@@ -509,7 +509,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
 
         {/* Analytics Card */}
         {filteredExpenses.length > 0 && (
-          <div className="rounded-lg shadow mb-4 sm:mb-8 p-4 sm:p-6 transition-colors" style={themedCardStyle}>
+          <div className="card mb-4 sm:mb-8 p-4 sm:p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-6 flex items-center transition-colors">
               <BarChart3 className="h-6 w-6 mr-2 text-indigo-600 dark:text-indigo-400 transition-colors" />
               Análisis de Gastos
@@ -582,7 +582,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
         )}
 
         {/* Expenses List Card */}
-        <div className="mt-4 sm:mt-8 rounded-lg shadow transition-colors" style={themedCardStyle}>
+        <div className="card mt-4 sm:mt-8">
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-700 transition-colors">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2 transition-colors">
               <List className="w-5 h-5" />
@@ -634,7 +634,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                         <div className="flex items-center space-x-2 ml-4">
                           <button
                             onClick={() => setEditingExpense(expense)}
-                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 transition-colors"
+                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-2 transition-colors"
                             title="Editar"
                           >
                             <Edit2 className="h-4 w-4" />
@@ -642,7 +642,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                           <DeleteButtonWithConfirm
                             expenseId={expense.id}
                             onConfirm={() => handleDeleteExpense(expense.id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 transition-colors"
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 transition-colors"
                             title="Eliminar"
                           />
                         </div>
@@ -680,7 +680,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                       <button
                         onClick={() => setPage(1)}
                         disabled={page === 1}
-                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                         aria-label="Primera página"
                       >
                         <ChevronsLeft className="h-4 w-4" />
@@ -688,7 +688,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                       <button
                         onClick={() => setPage(p => Math.max(1, p - 1))}
                         disabled={page === 1}
-                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === 1 ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                         aria-label="Página anterior"
                       >
                         <ChevronLeft className="h-4 w-4" />
@@ -699,7 +699,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                       <button
                         onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                         disabled={page === totalPages}
-                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                         aria-label="Página siguiente"
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -707,7 +707,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                       <button
                         onClick={() => setPage(totalPages)}
                         disabled={page === totalPages}
-                        className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                        className={`inline-flex items-center p-2.5 sm:px-3 sm:py-2 text-sm rounded-md bg-transparent transition-colors ${page === totalPages ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
                         aria-label="Última página"
                       >
                         <ChevronsRight className="h-4 w-4" />

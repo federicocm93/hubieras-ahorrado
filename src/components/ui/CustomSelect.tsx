@@ -121,7 +121,7 @@ export default function CustomSelect({
           {filteredOptions.map((option) => (
             <div
               key={option.value}
-              className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-600 hover:text-white"
+              className="cursor-pointer select-none relative py-2.5 pl-3 pr-9 hover:bg-indigo-600 hover:text-white transition-colors"
               onClick={() => {
                 onChange(option.value)
                 setIsOpen(false)

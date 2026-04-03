@@ -24,7 +24,7 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
     color: 'var(--foreground)'
   }), [theme])
   const modalStyle = useMemo(() => ({ background: 'var(--surface)', color: 'var(--foreground)' }), [])
-  const headerStyle = useMemo(() => ({ background: 'var(--background)', borderColor: subtleBorderColor }), [subtleBorderColor])
+  const headerStyle = useMemo(() => ({ background: 'var(--surface)', borderColor: subtleBorderColor }), [subtleBorderColor])
   const dividerStyle = useMemo(() => ({ borderColor: subtleBorderColor }), [subtleBorderColor])
   const inputStyle = useMemo(() => ({
     background: 'var(--background)',
@@ -56,17 +56,17 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-colors"
+      className="fixed inset-0 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto"
       style={overlayStyle}
     >
-      <div className="rounded-lg max-w-md w-full shadow-lg transition-colors" style={modalStyle}>
+      <div className="rounded-lg max-w-md w-full shadow-lg transition-colors animate-modal-in" style={modalStyle}>
         <div className="flex items-center justify-between p-3 border-b mx-2 transition-colors" style={headerStyle}>
           <h2 className="text-lg font-semibold">
             Agregar Nueva Categoría
           </h2>
           <button
             onClick={onClose}
-            className="p-1 opacity-60 hover:opacity-100 transition-opacity"
+            className="p-2 opacity-60 hover:opacity-100 transition-opacity"
             style={{ color: 'var(--foreground)' }}
             aria-label="Cerrar modal"
           >
@@ -100,7 +100,7 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
+              className="btn-press px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Creando...' : 'Crear Categoría'}
             </button>

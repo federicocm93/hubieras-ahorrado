@@ -197,7 +197,7 @@ export default function GroupsManager() {
     <div className="min-h-screen transition-colors" style={themedPageStyle}>
       <TopBar />
       <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
-        <div className="rounded-lg shadow transition-colors" style={themedCardStyle}>
+        <div className="card">
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors" style={themedSectionStyle}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div>
@@ -205,7 +205,7 @@ export default function GroupsManager() {
                   <button
                     onClick={() => router.push('/dashboard')}
                     onMouseEnter={() => prefetchDashboardData()}
-                    className="sm:hidden mr-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full p-1 transition-colors"
+                    className="sm:hidden mr-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full p-2 transition-colors"
                     aria-label="Volver al inicio"
                   >
                     <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -347,7 +347,7 @@ export default function GroupsManager() {
                             e.stopPropagation()
                             handleLeaveGroup(group.id)
                           }}
-                          className="text-red-500 hover:text-red-400 p-1 transition-colors"
+                          className="text-red-500 hover:text-red-400 p-2 transition-colors"
                           title="Salir del grupo"
                         >
                           <Trash2 className="h-4 w-4" />
