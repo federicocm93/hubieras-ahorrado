@@ -133,7 +133,6 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
       }))
       
       console.log('✅ Expense added successfully')
-      toast.success('Gasto agregado exitosamente')
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
       console.error('❌ Error adding expense:', errorMessage)
@@ -170,7 +169,6 @@ export const useExpensesStore = create<ExpensesStore>((set, get) => ({
       }))
       
       console.log('✅ Expense updated successfully')
-      toast.success('Gasto actualizado exitosamente')
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
       console.error('❌ Error updating expense:', errorMessage)

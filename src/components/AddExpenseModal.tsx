@@ -269,8 +269,6 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       // Show success animation briefly before closing
       setLoading(false)
       setShowSuccess(true)
-      const successMessage = expense ? 'Gasto actualizado' : 'Gasto registrado'
-      toast.success(successMessage)
       setTimeout(() => {
         onSuccess()
       }, 600)
