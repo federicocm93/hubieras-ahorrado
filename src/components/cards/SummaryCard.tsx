@@ -73,8 +73,8 @@ export default function SummaryCard({
             />
         )}
       </div>
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+        <div className="min-w-0">
           <AnimatedCurrency
             amount={currentMonthExpenses}
             currency={selectedCurrency}
@@ -84,7 +84,7 @@ export default function SummaryCard({
           <p className="text-sm text-indigo-200 mt-1">{currentDate}</p>
         </div>
         {otherCurrencyTotals.length > 0 && (
-          <div className="flex flex-col items-start sm:items-end text-xs text-indigo-200 font-semibold leading-tight">
+          <div className="flex flex-col items-start md:items-end text-xs text-indigo-200 font-semibold leading-tight shrink-0">
             {otherCurrencyTotals.map(({ currency, total }) => (
               <AnimatedNumber
                 key={currency}
