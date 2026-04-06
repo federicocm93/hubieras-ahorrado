@@ -58,6 +58,7 @@ export default function TopBar() {
                 alt="Logo"
                 width={400}
                 height={100}
+                unoptimized
                 className="h-[44px] w-[160px] sm:h-[70px] sm:w-[280px] lg:h-[90px] lg:w-[360px]"
               />
             </div>
