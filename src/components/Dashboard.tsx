@@ -18,6 +18,7 @@ import CategoryDistributionCard from './cards/CategoryDistributionCard'
 import MonthlyExpensesCard from './cards/MonthlyExpensesCard'
 import RecentExpenses from './RecentExpenses'
 import CategoriesCard from './cards/CategoriesCard'
+import MobileCarousel from './ui/MobileCarousel'
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth()
@@ -160,8 +161,37 @@ export default function Dashboard() {
       <TopBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 stagger-children">
-          {/* Summary Card */}
+        {/* Mobile: carousel */}
+        <MobileCarousel className="md:hidden -mx-4 sm:-mx-6">
+          {[
+            <SummaryCard
+              key="summary"
+              selectedCurrency={selectedCurrency}
+              onCurrencyChange={setSelectedCurrency}
+              availableCurrencies={availableCurrencies}
+              currentMonthExpenses={currentMonthExpenses}
+              currentDate={currentDate}
+              monthlyTotalsByCurrency={monthlyTotalsByCurrency}
+              groupTotals={groupTotals}
+              groupTotalsLoading={groupTotalsLoading}
+              mostExpensiveCategory={currentMonthMostExpensiveCategory}
+              onAddExpense={() => setShowAddExpense(true)}
+              onAddCategory={() => setShowAddCategory(true)}
+            />,
+            <CategoryDistributionCard
+              key="category"
+              expenses={filteredExpenses}
+              currency={selectedCurrency}
+            />,
+            <MonthlyExpensesCard
+              key="monthly"
+              expenses={filteredExpenses}
+              currency={selectedCurrency}
+            />,
+          ]}
+        </MobileCarousel>
+        {/* Desktop: grid */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
           <SummaryCard
             selectedCurrency={selectedCurrency}
             onCurrencyChange={setSelectedCurrency}
