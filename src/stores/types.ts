@@ -15,6 +15,7 @@ export interface Expense {
   user_id: string
   group_id: string | null
   currency: string
+  is_fixed: boolean
   created_at: string
   categories: {
     name: string

@@ -883,6 +883,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
             group_id: editingExpense.group_id,
             user_id: editingExpense.paid_by,
             currency: editingExpense.currency,
+            is_fixed: false,
             created_at: editingExpense.date,
             categories: {
               name: editingExpense.category.name

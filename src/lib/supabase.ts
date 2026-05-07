@@ -40,6 +40,7 @@ export type Database = {
           user_id: string
           date: string
           created_at: string
+          is_fixed: boolean
           group_id?: string
           paid_by?: string
         }
@@ -51,6 +52,7 @@ export type Database = {
           user_id: string
           date: string
           created_at?: string
+          is_fixed?: boolean
           group_id?: string
           paid_by?: string
         }
@@ -62,6 +64,7 @@ export type Database = {
           user_id?: string
           date?: string
           created_at?: string
+          is_fixed?: boolean
           group_id?: string
           paid_by?: string
         }

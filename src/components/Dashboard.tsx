@@ -18,6 +18,7 @@ import CategoryDistributionCard from './cards/CategoryDistributionCard'
 import MonthlyExpensesCard from './cards/MonthlyExpensesCard'
 import RecentExpenses from './RecentExpenses'
 import CategoriesCard from './cards/CategoriesCard'
+import AIInsightsCard from './cards/AIInsightsCard'
 import MobileCarousel from './ui/MobileCarousel'
 
 export default function Dashboard() {
@@ -161,8 +162,13 @@ export default function Dashboard() {
       <TopBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 transition-colors">
+        <AIInsightsCard
+          expenses={expenses}
+          currency={selectedCurrency}
+        />
+
         {/* Mobile: carousel */}
-        <MobileCarousel className="md:hidden -mx-4 sm:-mx-6">
+        <MobileCarousel className="md:hidden -mx-4 sm:-mx-6 mt-4 sm:mt-8">
           {[
             <SummaryCard
               key="summary"
@@ -191,7 +197,7 @@ export default function Dashboard() {
           ]}
         </MobileCarousel>
         {/* Desktop: grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children mt-4 sm:mt-8">
           <SummaryCard
             selectedCurrency={selectedCurrency}
             onCurrencyChange={setSelectedCurrency}

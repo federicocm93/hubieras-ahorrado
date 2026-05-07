@@ -11,7 +11,7 @@ import { useExpensesStore } from '@/stores/expensesStore'
 import { Category, Expense, GroupMember, Group } from '@/stores/types'
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currencies'
 import { useTheme } from '@/contexts/ThemeContext'
-import ExpenseNameSuggestions from './ExpenseNameSuggestions'
+import ExpenseNameSuggestions, { ExpenseSuggestion } from './ExpenseNameSuggestions'
 import { useDebounce } from '@/hooks/useDebounce'
 import ReactDatePicker, { registerLocale } from 'react-datepicker'
 import { es } from 'date-fns/locale'
@@ -55,9 +55,10 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
   const [paidBy, setPaidBy] = useState('')
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY)
+  const [isFixed, setIsFixed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<Array<{ description: string; categoryId: string }>>([])
+  const [expenseNameSuggestions, setExpenseNameSuggestions] = useState<ExpenseSuggestion[]>([])
   const debouncedDescription = useDebounce(description, 300)
 
   // State for group selection (when availableGroups is provided)
@@ -84,28 +85,34 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       if (!user) return
 
       try {
-        // Fetch distinct expense descriptions with their most recent category for the user
+        // Fetch distinct expense descriptions with their most recent category + is_fixed flag
         const { data, error } = await supabase
           .from('expenses')
-          .select('description, category_id')
+          .select('description, category_id, is_fixed')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
 
         if (error) throw error
 
-        // Create a map to store the most recent category for each description
-        const descriptionMap = new Map<string, string>()
+        // Map description -> most recent { categoryId, isFixed }
+        const descriptionMap = new Map<string, { categoryId: string; isFixed: boolean }>()
 
         ;(data || []).forEach(exp => {
           const trimmedDesc = exp.description?.trim()
           if (trimmedDesc && trimmedDesc.length > 0 && !descriptionMap.has(trimmedDesc)) {
-            descriptionMap.set(trimmedDesc, exp.category_id)
+            descriptionMap.set(trimmedDesc, {
+              categoryId: exp.category_id,
+              isFixed: Boolean(exp.is_fixed),
+            })
           }
         })
 
-        // Convert to array and sort
-        const suggestions = Array.from(descriptionMap.entries())
-          .map(([description, categoryId]) => ({ description, categoryId }))
+        const suggestions: ExpenseSuggestion[] = Array.from(descriptionMap.entries())
+          .map(([description, info]) => ({
+            description,
+            categoryId: info.categoryId,
+            isFixed: info.isFixed,
+          }))
           .sort((a, b) => a.description.localeCompare(b.description))
 
         setExpenseNameSuggestions(suggestions)
@@ -184,6 +191,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       setCurrency(expense.currency || DEFAULT_CURRENCY)
       setPaidBy((expense as { paid_by?: string }).paid_by || '')
       setSelectedGroupId(expense.group_id || '')
+      setIsFixed(Boolean(expense.is_fixed))
     } else {
       setAmount('')
       setAmountValue(null)
@@ -191,6 +199,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
       setCurrency(DEFAULT_CURRENCY)
       setPaidBy(user?.id || '')
       setSelectedGroupId(groupId || '')
+      setIsFixed(false)
     }
   }, [expense, user, groupId])
 
@@ -233,6 +242,7 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
         user_id: user.id,
         date,
         currency,
+        is_fixed: isFixed,
         group_id: selectedGroupId || null,
         ...(selectedGroupId && {
           paid_by: paidBy || user.id
@@ -350,9 +360,10 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
             <ExpenseNameSuggestions
               suggestions={expenseNameSuggestions}
               currentInput={debouncedDescription}
-              onSelect={(name, categoryId) => {
-                setDescription(name)
-                setCategoryId(categoryId)
+              onSelect={(suggestion) => {
+                setDescription(suggestion.description)
+                setCategoryId(suggestion.categoryId)
+                setIsFixed(suggestion.isFixed)
               }}
             />
           </div>
@@ -428,6 +439,23 @@ export default function AddExpenseModal({ categories, expense, onClose, onSucces
               />
             </div>
           )}
+
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isFixed}
+              onChange={(e) => setIsFixed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <span className="text-sm">
+              <span className="font-medium" style={{ color: 'var(--foreground)' }}>
+                Gasto fijo
+              </span>
+              <span className="block text-xs text-gray-500 dark:text-slate-400">
+                Marcalo si se repite todos los meses (Netflix, alquiler, monotributo, etc). Lo usamos para proyectar el total a fin de mes.
+              </span>
+            </span>
+          </label>
 
           <div>
             <label className="block text-sm font-medium transition-colors" style={{ color: 'var(--foreground)' }}>

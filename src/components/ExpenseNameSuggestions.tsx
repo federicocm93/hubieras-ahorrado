@@ -3,9 +3,15 @@
 import { useMemo } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 
+export interface ExpenseSuggestion {
+  description: string
+  categoryId: string
+  isFixed: boolean
+}
+
 interface ExpenseNameSuggestionsProps {
-  suggestions: Array<{ description: string; categoryId: string }>
-  onSelect: (name: string, categoryId: string) => void
+  suggestions: ExpenseSuggestion[]
+  onSelect: (suggestion: ExpenseSuggestion) => void
   currentInput: string
 }
 
@@ -54,7 +60,7 @@ export default function ExpenseNameSuggestions({ suggestions, onSelect, currentI
           <button
             key={suggestion.description}
             type="button"
-            onClick={() => onSelect(suggestion.description, suggestion.categoryId)}
+            onClick={() => onSelect(suggestion)}
             className="px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-105 hover:shadow-sm"
             style={pillStyle}
           >
