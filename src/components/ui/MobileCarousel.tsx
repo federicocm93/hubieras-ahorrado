@@ -41,7 +41,7 @@ export default function MobileCarousel({ children, className = '' }: MobileCarou
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {children.map((child, i) => (
-          <div key={i} className="snap-center shrink-0 w-[85%] first:ml-[7.5%] last:mr-[7.5%] [&>*]:h-full">
+          <div key={i} className="snap-center shrink-0 w-full [&>*]:h-full">
             {child}
           </div>
         ))}

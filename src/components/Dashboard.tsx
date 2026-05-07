@@ -168,7 +168,7 @@ export default function Dashboard() {
         />
 
         {/* Mobile: carousel */}
-        <MobileCarousel className="md:hidden -mx-4 sm:-mx-6 mt-4 sm:mt-8">
+        <MobileCarousel className="md:hidden mt-4 sm:mt-8">
           {[
             <SummaryCard
               key="summary"
