@@ -57,7 +57,10 @@ const monthKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 
 function buildAggregates(expenses: Expense[], currency: string, monthsBack: number) {
-  const filtered = expenses.filter(e => e.currency === currency)
+  // Exclude fixed expenses: their pay-date can shift between months and would
+  // skew the day-by-day comparison the AI uses (e.g. car insurance paid on
+  // the 5th this month vs the 10th last month would look like a "spike").
+  const filtered = expenses.filter(e => e.currency === currency && !e.is_fixed)
 
   const now = new Date()
   const currentDay = now.getDate()
@@ -279,6 +282,7 @@ export default function AIInsightsCard({ expenses, currency }: AIInsightsCardPro
   }, [fetchInsights])
 
   const hasNoData = currentMonth.total === 0 && previousMonths.length === 0
+  const hasOnlyFixed = hasNoData && hasProjection
   const lastUpdated = generatedAt
     ? new Date(generatedAt).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })
     : null
@@ -434,8 +438,10 @@ export default function AIInsightsCard({ expenses, currency }: AIInsightsCardPro
       )}
 
       {hasNoData ? (
-        <div className="text-sm text-gray-500 dark:text-slate-400 py-6 text-center">
-          Cargá algunos gastos en {currency} para que el asistente pueda analizarte.
+        <div className="text-sm text-gray-500 dark:text-slate-400 py-4 text-center">
+          {hasOnlyFixed
+            ? 'Sin gastos variables para analizar este mes. Los gastos fijos se usan para la proyección, no para el análisis.'
+            : `Cargá algunos gastos en ${currency} para que el asistente pueda analizarte.`}
         </div>
       ) : (
         <>

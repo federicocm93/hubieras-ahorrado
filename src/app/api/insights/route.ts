@@ -57,7 +57,7 @@ function buildPrompt(body: InsightsRequestBody): string {
 
   const windowLine =
     typeof dayCutoff === 'number'
-      ? `\nVentana de comparación: TODOS los meses están agregados solo hasta el día ${dayCutoff} (inclusive). Es decir, si hoy es día ${dayCutoff} del mes, los meses anteriores se compararon también con sus primeros ${dayCutoff} días. La comparación es justa día-a-día, no hace falta decir "es principio de mes" ni descartar una tendencia por eso.`
+      ? `\nVentana de comparación: TODOS los meses están agregados solo hasta el día ${dayCutoff} (inclusive). Es decir, si hoy es día ${dayCutoff} del mes, los meses anteriores se compararon también con sus primeros ${dayCutoff} días. La comparación es justa día-a-día, no hace falta decir "es principio de mes" ni descartar una tendencia por eso.\nGASTOS FIJOS EXCLUIDOS: los datos NO incluyen los gastos que el usuario marcó como fijos (alquiler, seguros, monotributo, suscripciones, etc.). Esos se manejan aparte para la proyección de fin de mes y se excluyen acá porque su día de pago puede variar entre meses y distorsionaría la comparación. Estás analizando solo gastos variables.`
       : ''
 
   return `Sos un asistente financiero personal. Hablale al usuario en español rioplatense (vos, tuteo argentino), de forma cercana y directa, sin emojis innecesarios. No saludes ni te presentes.
