@@ -52,41 +52,40 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50 lg:bg-slate-950 text-slate-100">
       <div className="lg:hidden flex justify-center px-6 pt-12 pb-6">
-        <Image src="/hubieras-ahorrado.svg" alt="Hubieras Ahorrado Logo" width={520} height={180} className="w-80" />
+        <Image src="/hubieras-ahorrado.svg" alt="Hubieras Ahorrado Logo" width={520} height={180} className="w-full max-w-[80rem]" />
       </div>
       <div className="hidden lg:flex relative flex-1 px-6 py-10 sm:px-10 sm:py-12 bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 overflow-hidden">
         {/* Geometric accent — clean, not blurry */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] border border-white/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] border border-white/5 rounded-full translate-y-1/3 -translate-x-1/4 pointer-events-none" />
-        <div className="absolute top-1/2 right-1/4 w-3 h-3 bg-amber-400 rounded-full pointer-events-none opacity-60" />
 
-        <div className="relative max-w-lg w-full mx-auto flex flex-col gap-8 text-left">
+        <div className="relative max-w-6xl w-full mx-auto flex flex-col items-center gap-8 text-center">
           <Image
             src="/hubieras-ahorrado.svg"
             alt="Hubieras Ahorrado Logo"
             width={400}
             height={140}
-            className="w-48 md:w-64 lg:w-72"
+            className="w-[48rem] md:w-[64rem] lg:w-[72rem] max-w-full"
           />
           <div className="space-y-4 mt-auto pb-4">
-            <p className="text-2xl md:text-3xl font-bold text-white max-w-md leading-tight">
+            <p className="text-2xl md:text-3xl font-bold text-white max-w-md mx-auto leading-tight">
               Organiza tus gastos compartidos sin fricción.
             </p>
-            <p className="text-base text-indigo-200 max-w-md leading-relaxed">
+            <p className="text-base text-indigo-200 max-w-md mx-auto leading-relaxed">
               Divide cuentas, registra quién pagó qué y evita malentendidos. Tu panel financiero colaborativo
               siempre a mano.
             </p>
           </div>
         </div>
       </div>
-      <div className="relative z-20 flex flex-1 items-center justify-center bg-gray-50 px-5 py-10 sm:px-8 lg:py-12 text-slate-900">
+      <div className="relative z-20 flex flex-1 items-center justify-center bg-gray-50 px-5 py-10 sm:px-8 lg:py-12 text-slate-900 dark:text-slate-100">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 space-y-8">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 text-center">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 text-center">
               {isSignUp ? 'Crea tu cuenta' : 'Bienvenido de nuevo'}
             </h2>
             {isSignUp && (
-              <p className="mt-2 text-center text-sm text-slate-500">
+              <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
                 Regístrate para empezar a organizar tus gastos con amigos y familia.
               </p>
             )}
@@ -94,7 +93,7 @@ export default function Auth() {
           <form className="space-y-5" onSubmit={handleAuth}>
             <div className="space-y-4">
               <div className="space-y-3">
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Email
                 </label>
                 <input
@@ -103,14 +102,14 @@ export default function Auth() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900"
                   placeholder="tucorreo@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-3">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Contraseña
                 </label>
                 <input
@@ -119,18 +118,18 @@ export default function Auth() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 {!isSignUp && errorMessage && (
-                  <p className="text-sm text-red-600 mt-2">{errorMessage}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-2">{errorMessage}</p>
                 )}
               </div>
               {isSignUp && (
                 <div className="space-y-3">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     Confirmar contraseña
                   </label>
                   <input
@@ -139,7 +138,7 @@ export default function Auth() {
                     type="password"
                     autoComplete="new-password"
                     required
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900"
                     placeholder="Repite tu contraseña"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -150,16 +149,16 @@ export default function Auth() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-press w-full rounded-xl bg-indigo-600 py-3.5 text-white font-bold hover:bg-indigo-500 transition focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-60 text-base"
+              className="btn-press w-full rounded-xl bg-indigo-600 py-3.5 text-white font-bold hover:bg-indigo-500 transition focus:outline-none focus:ring-4 focus:ring-indigo-200 dark:focus:ring-indigo-900 disabled:opacity-60 text-base"
             >
               {loading ? 'Cargando...' : isSignUp ? 'Registrarme' : 'Iniciar sesión'}
             </button>
           </form>
-          <div className="text-center text-sm text-slate-600">
+          <div className="text-center text-sm text-slate-600 dark:text-slate-300">
             <span>{isSignUp ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}</span>{' '}
             <button
               type="button"
-              className="font-semibold text-indigo-600 hover:text-indigo-500"
+              className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
               onClick={() => {
                 setIsSignUp(!isSignUp)
                 setErrorMessage(null)
