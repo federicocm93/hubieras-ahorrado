@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import AnimatedCurrency from '@/components/ui/AnimatedCurrency'
 import AnimatedNumber from '@/components/ui/AnimatedNumber'
 import CurrencySelect from '@/components/ui/CurrencySelect'
+import MonthSelector from '@/components/ui/MonthSelector'
 import type { GroupTotal } from '@/stores/groupTotalsStore'
 import { CalendarRange, TrendingUp, Users, Zap } from 'lucide-react'
 
@@ -12,8 +13,10 @@ interface SummaryCardProps {
   selectedCurrency: string
   onCurrencyChange: (currency: string) => void
   availableCurrencies: string[]
-  currentMonthExpenses: number
-  currentDate: string
+  selectedMonthExpenses: number
+  selectedMonth: number
+  selectedYear: number
+  onMonthChange: (month: number, year: number) => void
   monthlyTotalsByCurrency: { currency: string; total: number }[]
   groupTotals: GroupTotal[]
   groupTotalsLoading: boolean
@@ -26,8 +29,10 @@ export default function SummaryCard({
   selectedCurrency,
   onCurrencyChange,
   availableCurrencies,
-  currentMonthExpenses,
-  currentDate,
+  selectedMonthExpenses,
+  selectedMonth,
+  selectedYear,
+  onMonthChange,
   monthlyTotalsByCurrency,
   groupTotals,
   groupTotalsLoading,
@@ -76,12 +81,19 @@ export default function SummaryCard({
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
         <div className="min-w-0">
           <AnimatedCurrency
-            amount={currentMonthExpenses}
+            amount={selectedMonthExpenses}
             currency={selectedCurrency}
             className="block text-4xl sm:text-5xl font-extrabold text-white tracking-tight"
             numberClassName="block"
           />
-          <p className="text-sm text-indigo-200 mt-1">{currentDate}</p>
+          <MonthSelector
+            month={selectedMonth}
+            year={selectedYear}
+            onChange={onMonthChange}
+            className="mt-1 -ml-1"
+            buttonClassName="text-indigo-100 hover:bg-white/10"
+            labelClassName="text-sm text-indigo-200 font-medium"
+          />
         </div>
         {otherCurrencyTotals.length > 0 && (
           <div className="flex flex-col items-start md:items-end text-xs text-indigo-200 font-semibold leading-tight shrink-0">

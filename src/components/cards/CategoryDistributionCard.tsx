@@ -7,10 +7,14 @@ import { ChartPie } from 'lucide-react'
 interface CategoryDistributionCardProps {
   expenses: Expense[]
   currency: string
+  month?: number
+  year?: number
 }
 
-export default function CategoryDistributionCard({ expenses, currency }: CategoryDistributionCardProps) {
+export default function CategoryDistributionCard({ expenses, currency, month, year }: CategoryDistributionCardProps) {
   const today = new Date()
+  const resolvedMonth = month ?? today.getMonth()
+  const resolvedYear = year ?? today.getFullYear()
 
   return (
     <div className="card p-4 sm:p-6">
@@ -21,8 +25,8 @@ export default function CategoryDistributionCard({ expenses, currency }: Categor
       <div className="h-96 sm:h-auto">
         <CategoryPieChart
           expenses={expenses}
-          month={today.getMonth()}
-          year={today.getFullYear()}
+          month={resolvedMonth}
+          year={resolvedYear}
           currency={currency}
         />
       </div>

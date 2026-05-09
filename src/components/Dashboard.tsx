@@ -46,6 +46,8 @@ export default function Dashboard() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY)
   const [userGroups, setUserGroups] = useState<Group[]>([])
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth())
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear())
 
   // Simple loading state - show loading while auth is loading or data is syncing
   const loading = authLoading || dataLoading
@@ -106,19 +108,14 @@ export default function Dashboard() {
     }
   }
 
-  const now = new Date()
-  const currentMonth = now.getMonth()
-  const currentYear = now.getFullYear()
+  const selectedMonthExpenses = getTotalExpensesByDate(selectedMonth, selectedYear, selectedCurrency)
 
-  const currentMonthExpenses = getTotalExpensesByDate(currentMonth, currentYear, selectedCurrency)
-  const currentDate = now.toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
-  
-  const currentMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(currentMonth, currentYear, selectedCurrency)
-  
+  const selectedMonthMostExpensiveCategory = getMostExpensiveCategoryByDate(selectedMonth, selectedYear, selectedCurrency)
+
   const availableCurrencies = getAvailableCurrencies()
   const monthlyTotalsByCurrency = availableCurrencies.map(currency => ({
     currency,
-    total: getTotalExpensesByDate(currentMonth, currentYear, currency)
+    total: getTotalExpensesByDate(selectedMonth, selectedYear, currency)
   }))
   const filteredExpenses = expenses.filter(expense => expense.currency === selectedCurrency)
   
@@ -140,19 +137,19 @@ export default function Dashboard() {
   const initialFetchDone = useRef(false)
   const currentFetchKey = useRef<string | null>(null)
 
-  // Fetch group totals when user or currency changes
+  // Fetch group totals when user, month or currency changes
   useEffect(() => {
     if (user?.id) {
-      const fetchKey = `${user.id}-${currentMonth}-${currentYear}-${selectedCurrency}`
-      
+      const fetchKey = `${user.id}-${selectedMonth}-${selectedYear}-${selectedCurrency}`
+
       // Only fetch if this is a new combination or we haven't fetched yet
       if (!initialFetchDone.current || currentFetchKey.current !== fetchKey) {
         initialFetchDone.current = true
         currentFetchKey.current = fetchKey
-        fetchGroupTotals(user.id, currentMonth, currentYear, selectedCurrency)
+        fetchGroupTotals(user.id, selectedMonth, selectedYear, selectedCurrency)
       }
     }
-  }, [user?.id, selectedCurrency, fetchGroupTotals, currentMonth, currentYear])
+  }, [user?.id, selectedCurrency, fetchGroupTotals, selectedMonth, selectedYear])
 
 
 
@@ -175,12 +172,17 @@ export default function Dashboard() {
               selectedCurrency={selectedCurrency}
               onCurrencyChange={setSelectedCurrency}
               availableCurrencies={availableCurrencies}
-              currentMonthExpenses={currentMonthExpenses}
-              currentDate={currentDate}
+              selectedMonthExpenses={selectedMonthExpenses}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              onMonthChange={(month, year) => {
+                setSelectedMonth(month)
+                setSelectedYear(year)
+              }}
               monthlyTotalsByCurrency={monthlyTotalsByCurrency}
               groupTotals={groupTotals}
               groupTotalsLoading={groupTotalsLoading}
-              mostExpensiveCategory={currentMonthMostExpensiveCategory}
+              mostExpensiveCategory={selectedMonthMostExpensiveCategory}
               onAddExpense={() => setShowAddExpense(true)}
               onAddCategory={() => setShowAddCategory(true)}
             />,
@@ -188,6 +190,8 @@ export default function Dashboard() {
               key="category"
               expenses={filteredExpenses}
               currency={selectedCurrency}
+              month={selectedMonth}
+              year={selectedYear}
             />,
             <MonthlyExpensesCard
               key="monthly"
@@ -202,18 +206,25 @@ export default function Dashboard() {
             selectedCurrency={selectedCurrency}
             onCurrencyChange={setSelectedCurrency}
             availableCurrencies={availableCurrencies}
-            currentMonthExpenses={currentMonthExpenses}
-            currentDate={currentDate}
+            selectedMonthExpenses={selectedMonthExpenses}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onMonthChange={(month, year) => {
+              setSelectedMonth(month)
+              setSelectedYear(year)
+            }}
             monthlyTotalsByCurrency={monthlyTotalsByCurrency}
             groupTotals={groupTotals}
             groupTotalsLoading={groupTotalsLoading}
-            mostExpensiveCategory={currentMonthMostExpensiveCategory}
+            mostExpensiveCategory={selectedMonthMostExpensiveCategory}
             onAddExpense={() => setShowAddExpense(true)}
             onAddCategory={() => setShowAddCategory(true)}
           />
           <CategoryDistributionCard
             expenses={filteredExpenses}
             currency={selectedCurrency}
+            month={selectedMonth}
+            year={selectedYear}
           />
           <MonthlyExpensesCard
             expenses={filteredExpenses}
