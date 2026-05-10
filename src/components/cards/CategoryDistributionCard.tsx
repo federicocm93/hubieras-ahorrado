@@ -17,17 +17,19 @@ export default function CategoryDistributionCard({ expenses, currency, month, ye
   const resolvedYear = year ?? today.getFullYear()
 
   return (
-    <div className="card p-4 sm:p-6">
+    <div className="card p-4 sm:p-6 h-full flex flex-col">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2 transition-colors">
         <ChartPie className="w-5 h-5" />
         Distribución por Categoría
       </h2>
-      <CategoryPieChart
-        expenses={expenses}
-        month={resolvedMonth}
-        year={resolvedYear}
-        currency={currency}
-      />
+      <div className="flex-1 flex items-center justify-center">
+        <CategoryPieChart
+          expenses={expenses}
+          month={resolvedMonth}
+          year={resolvedYear}
+          currency={currency}
+        />
+      </div>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useTheme } from '@/contexts/ThemeContext'
 import { Expense } from '@/stores/types'
 import AnimatedNumber from '../ui/AnimatedNumber'
 
@@ -62,8 +61,6 @@ const arcPath = (
 }
 
 export default function CategoryPieChart({ expenses, month, year, currency }: CategoryPieChartProps) {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
   const [hovered, setHovered] = useState<number | null>(null)
 
   const filteredExpenses = useMemo(
@@ -222,70 +219,6 @@ export default function CategoryPieChart({ expenses, month, year, currency }: Ca
         </div>
       </div>
 
-      {/* Legend */}
-      <ul
-        className="w-full grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5"
-        onMouseLeave={() => setHovered(null)}
-      >
-        {segments.map((segment, index) => {
-          const isHovered = hovered === index
-          const isDimmed = hovered !== null && !isHovered
-          return (
-            <li key={segment.name}>
-              <button
-                type="button"
-                onMouseEnter={() => setHovered(index)}
-                onFocus={() => setHovered(index)}
-                onBlur={() => setHovered(null)}
-                className="w-full text-left rounded-xl px-2.5 py-2 flex items-center gap-3 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-slate-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                style={{ opacity: isDimmed ? 0.45 : 1 }}
-              >
-                <span
-                  className="w-2.5 h-8 rounded-full shrink-0 transition-transform duration-200"
-                  style={{
-                    backgroundColor: segment.color,
-                    transform: isHovered ? 'scaleY(1.1)' : 'scaleY(1)',
-                    boxShadow: isHovered
-                      ? `0 0 0 3px ${segment.color}33`
-                      : 'none',
-                  }}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">
-                      {segment.name}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-slate-100 tabular-nums shrink-0">
-                      {formatCurrency(segment.value)}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <div
-                      className="flex-1 h-1 rounded-full overflow-hidden"
-                      style={{
-                        backgroundColor: isDark
-                          ? 'rgba(148, 163, 184, 0.15)'
-                          : 'rgba(148, 163, 184, 0.2)',
-                      }}
-                    >
-                      <div
-                        className="h-full rounded-full transition-[width] duration-500 ease-out"
-                        style={{
-                          width: `${segment.percentage}%`,
-                          backgroundColor: segment.color,
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-slate-400 tabular-nums shrink-0 w-10 text-right">
-                      {segment.percentage.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
     </div>
   )
 }
