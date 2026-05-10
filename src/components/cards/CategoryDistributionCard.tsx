@@ -22,14 +22,12 @@ export default function CategoryDistributionCard({ expenses, currency, month, ye
         <ChartPie className="w-5 h-5" />
         Distribución por Categoría
       </h2>
-      <div className="h-96 sm:h-auto">
-        <CategoryPieChart
-          expenses={expenses}
-          month={resolvedMonth}
-          year={resolvedYear}
-          currency={currency}
-        />
-      </div>
+      <CategoryPieChart
+        expenses={expenses}
+        month={resolvedMonth}
+        year={resolvedYear}
+        currency={currency}
+      />
     </div>
   )
 }
