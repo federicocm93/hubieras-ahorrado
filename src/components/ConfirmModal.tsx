@@ -43,15 +43,18 @@ export default function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto"
+      className="fixed inset-0 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 z-50 animate-backdrop-in"
       style={overlayStyle}
       onClick={onCancel}
     >
       <div
-        className="rounded-lg max-w-md w-full shadow-lg transition-colors animate-modal-in"
+        className="rounded-t-2xl sm:rounded-lg max-w-md w-full pb-[env(safe-area-inset-bottom)] sm:pb-0 shadow-lg transition-colors animate-modal-in"
         style={modalStyle}
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="sm:hidden flex justify-center pt-2" aria-hidden="true">
+          <div className="h-1 w-10 rounded-full bg-current opacity-20" />
+        </div>
         <div className="flex items-center justify-between p-3 border-b mx-2 transition-colors" style={headerStyle}>
           <h2 className="text-lg font-semibold">
             {title}
@@ -86,7 +89,7 @@ export default function ConfirmModal({
             <button
               type="button"
               onClick={onConfirm}
-              className={`btn-press px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${confirmButtonClass} transition-colors`}
+              className={`btn-press flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${confirmButtonClass} transition-colors`}
             >
               {confirmText}
             </button>

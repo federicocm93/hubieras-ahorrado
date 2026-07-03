@@ -56,10 +56,13 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto"
+      className="fixed inset-0 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 z-50 animate-backdrop-in"
       style={overlayStyle}
     >
-      <div className="rounded-lg max-w-md w-full shadow-lg transition-colors animate-modal-in" style={modalStyle}>
+      <div className="rounded-t-2xl sm:rounded-lg max-w-md w-full pb-[env(safe-area-inset-bottom)] sm:pb-0 shadow-lg transition-colors animate-modal-in" style={modalStyle}>
+        <div className="sm:hidden flex justify-center pt-2" aria-hidden="true">
+          <div className="h-1 w-10 rounded-full bg-current opacity-20" />
+        </div>
         <div className="flex items-center justify-between p-3 border-b mx-2 transition-colors" style={headerStyle}>
           <h2 className="text-lg font-semibold">
             Agregar Nueva Categoría
@@ -100,7 +103,7 @@ export default function AddCategoryModal({ onClose, onSuccess }: AddCategoryModa
             <button
               type="submit"
               disabled={loading}
-              className="btn-press px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
+              className="btn-press flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Creando...' : 'Crear Categoría'}
             </button>

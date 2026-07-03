@@ -113,9 +113,12 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
   }
 
   return (
-    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 pt-8 sm:pt-4 z-50 animate-backdrop-in overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto text-gray-900 dark:text-slate-100 shadow-lg transition-colors animate-modal-in">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 transition-colors">
+    <div className="fixed inset-0 bg-white/10 dark:bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 z-50 animate-backdrop-in">
+      <div className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-lg max-w-md w-full max-h-[85dvh] sm:max-h-[90vh] flex flex-col overflow-hidden text-gray-900 dark:text-slate-100 shadow-lg transition-colors animate-modal-in">
+        <div className="sm:hidden shrink-0 flex justify-center pt-2" aria-hidden="true">
+          <div className="h-1 w-10 rounded-full bg-current opacity-20" />
+        </div>
+        <div className="shrink-0 flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 transition-colors">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 transition-colors">
             Crear Grupo
           </h2>
@@ -127,7 +130,8 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 space-y-4">
           <div>
             <label htmlFor="groupName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
               Nombre del Grupo
@@ -177,18 +181,20 @@ export default function CreateGroupModal({ onClose, onSuccess }: CreateGroupModa
             </button>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-slate-800 transition-colors">
+          </div>
+
+          <div className="shrink-0 flex justify-end gap-3 p-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6 border-t border-gray-100 dark:border-slate-800 transition-colors">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2.5 sm:py-2 border border-gray-300 dark:border-slate-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
+              className="btn-press flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Creando...' : 'Crear Grupo'}
             </button>

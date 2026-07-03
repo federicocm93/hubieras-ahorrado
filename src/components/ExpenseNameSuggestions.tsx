@@ -55,13 +55,14 @@ export default function ExpenseNameSuggestions({ suggestions, onSelect, currentI
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
         Sugerencias:
       </p>
-      <div className="flex flex-wrap gap-2">
+      {/* En mobile es una fila horizontal scrolleable para no empujar el formulario hacia abajo */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
         {filteredSuggestions.map((suggestion) => (
           <button
             key={suggestion.description}
             type="button"
             onClick={() => onSelect(suggestion)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-105 hover:shadow-sm"
+            className="shrink-0 whitespace-nowrap px-3.5 py-2 sm:py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-105 hover:shadow-sm active:scale-95"
             style={pillStyle}
           >
             {suggestion.description}

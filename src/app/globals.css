@@ -95,6 +95,18 @@ html:not(.dark) .text-gray-800 { color: #0a0a0a !important; }
   to { opacity: 1; }
 }
 
+/* Mobile bottom sheet — slide up from below */
+@keyframes sheetIn {
+  from {
+    opacity: 0.6;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Staggered list items — slide up and fade */
 @keyframes slideUp {
   from {
@@ -149,6 +161,22 @@ html:not(.dark) .text-gray-800 { color: #0a0a0a !important; }
 /* Reusable animation classes */
 .animate-modal-in {
   animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Modals enter as a bottom sheet on mobile, scale in on larger screens */
+@media (max-width: 639px) {
+  .animate-modal-in {
+    animation: sheetIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* Hide scrollbar on horizontal chip rows without disabling scroll */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .animate-backdrop-in {
