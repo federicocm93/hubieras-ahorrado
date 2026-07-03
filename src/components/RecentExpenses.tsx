@@ -11,6 +11,7 @@ interface RecentExpensesProps {
   expenses: Expense[]
   onEditExpense: (expense: Expense) => void
   onDeleteExpense: (expenseId: string) => void | Promise<void>
+  onAddExpense?: () => void
 }
 
 const formatDate = (isoDate: string) => {
@@ -18,7 +19,7 @@ const formatDate = (isoDate: string) => {
   return `${day}/${month}/${year}`
 }
 
-export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpense }: RecentExpensesProps) {
+export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpense, onAddExpense }: RecentExpensesProps) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -51,10 +52,18 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
       {expenses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 animate-slide-up">
           <Wallet className="h-12 w-12 text-indigo-300 dark:text-indigo-600 mb-4" />
-          <p className="text-base font-medium text-gray-700 dark:text-slate-300 mb-1">Sin gastos todavia</p>
+          <p className="text-base font-medium text-gray-700 dark:text-slate-300 mb-1">Sin gastos todavía</p>
           <p className="text-sm text-gray-500 dark:text-slate-500 text-center max-w-xs">
             Agrega tu primer gasto y empieza a tener el control de tus finanzas.
           </p>
+          {onAddExpense && (
+            <button
+              onClick={onAddExpense}
+              className="btn-press mt-5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-sm font-semibold transition-colors"
+            >
+              Agregar mi primer gasto
+            </button>
+          )}
         </div>
       ) : (
       <>
@@ -91,7 +100,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                 <span className="text-lg font-bold text-gray-900 dark:text-slate-100 transition-colors">
                   {formatCurrency(expense.amount, expense.currency)}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-800 dark:bg-slate-700 px-2 py-1 rounded transition-colors">
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded transition-colors">
                   {expense.currency}
                 </span>
               </div>
@@ -113,7 +122,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                 }}
                 options={[5, 10, 20, 50].map(size => ({ value: String(size), label: String(size) }))}
                 placeholder="Tamaño"
-                buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
+                buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
               />
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
@@ -161,22 +170,22 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
         <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 transition-colors">
           <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider transition-colors">
                 Fecha
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider transition-colors">
                 Descripción
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider transition-colors">
                 Categoría
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider transition-colors">
                 Monto
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider transition-colors">
                 Moneda
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-900 uppercase tracking-wider transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider transition-colors">
                 Acciones
               </th>
             </tr>
@@ -187,7 +196,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
                   {formatDate(expense.date)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-slate-100 transition-colors max-w-[280px] truncate" title={expense.description}>
                   {expense.description}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100 transition-colors">
@@ -237,7 +246,7 @@ export default function RecentExpenses({ expenses, onEditExpense, onDeleteExpens
               }}
               options={[10, 20, 50, 100].map(size => ({ value: String(size), label: `${size} por página` }))}
               placeholder="Tamaño"
-              buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
+              buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
             />
           </div>
           <div className="flex items-center gap-2">

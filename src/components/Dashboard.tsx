@@ -236,6 +236,7 @@ export default function Dashboard() {
           expenses={expenses}
           onEditExpense={(expense) => setEditingExpense(expense)}
           onDeleteExpense={deleteExpense}
+          onAddExpense={() => setShowAddExpense(true)}
         />
 
         <CategoriesCard

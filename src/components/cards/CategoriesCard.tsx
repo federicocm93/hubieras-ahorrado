@@ -10,7 +10,7 @@ interface CategoriesCardProps {
 
 export default function CategoriesCard({ categories, onDeleteCategory }: CategoriesCardProps) {
 
-  const orderedCategories = categories.sort((a, b) => {
+  const orderedCategories = [...categories].sort((a, b) => {
     // First, prioritize default categories
     if (a.is_default && !b.is_default) return -1
     if (!a.is_default && b.is_default) return 1
@@ -19,7 +19,7 @@ export default function CategoriesCard({ categories, onDeleteCategory }: Categor
   })
   return (
     <div className="card mt-4 sm:mt-8">
-      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-300 transition-colors">
+      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-slate-700 transition-colors">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2 transition-colors">
           <Tags className="w-5 h-5" />
           Categorías
@@ -36,7 +36,7 @@ export default function CategoriesCard({ categories, onDeleteCategory }: Categor
               {!category.is_default && (
                 <button
                   onClick={() => onDeleteCategory(category.id)}
-                  className="text-indigo-400 hover:text-red-500 dark:text-indigo-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                  className="text-indigo-400 hover:text-red-500 dark:text-indigo-500 dark:hover:text-red-400 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-all flex-shrink-0"
                   title="Eliminar categoría"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

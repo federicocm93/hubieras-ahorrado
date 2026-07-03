@@ -651,7 +651,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                         <span className="text-lg font-bold text-gray-900 dark:text-slate-100 transition-colors">
                           {formatCurrency(expense.amount, expense.currency)}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-300 bg-gray-800 dark:bg-slate-700 px-2 py-1 rounded transition-colors">
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded transition-colors">
                           {expense.currency}
                         </span>
                       </div>
@@ -673,7 +673,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                         }}
                         options={[5, 10, 20, 50].map(size => ({ value: String(size), label: String(size) }))}
                         placeholder="Tamaño"
-                        buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
+                        buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
                       />
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2">
@@ -810,7 +810,7 @@ export default function SharedExpenses({ group, onBack }: SharedExpensesProps) {
                       }}
                       options={[10, 20, 50, 100].map(size => ({ value: String(size), label: `${size} por página` }))}
                       placeholder="Tamaño"
-                      buttonClassName="bg-gray-800 dark:bg-slate-700 text-white"
+                      buttonClassName="bg-[var(--background)] text-[var(--foreground)] !border-[rgba(148,163,184,0.25)]"
                     />
                   </div>
                   <div className="flex items-center gap-2">

@@ -45,7 +45,7 @@ export default function MonthlyExpensesCard({ expenses, currency }: MonthlyExpen
           <label htmlFor="monthly-limit" className="text-sm text-gray-600 dark:text-slate-300">Límite mensual</label>
           <AmountInput
             id="monthly-limit"
-            className="flex-1 rounded border px-2 py-1 text-sm bg-transparent"
+            className="flex-1 min-w-0 rounded-md border border-[rgba(148,163,184,0.25)] px-2.5 py-1.5 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
             value={inputValue}
             onValueChange={(display, numeric) => {
               setInputValue(display)
@@ -63,7 +63,7 @@ export default function MonthlyExpensesCard({ expenses, currency }: MonthlyExpen
               await saveLimit(amount)
               setIsEditing(false)
             }}
-            className="rounded bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 disabled:opacity-60"
+            className="btn-press rounded-md bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-sm font-medium px-3 py-1.5 disabled:opacity-60 transition-colors"
           >
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
@@ -77,7 +77,7 @@ export default function MonthlyExpensesCard({ expenses, currency }: MonthlyExpen
           <button
             type="button"
             aria-label="Editar límite"
-            className="ml-auto p-2 hover:bg-gray-50 dark:hover:bg-slate-800"
+            className="icon-lift ml-auto p-2 rounded-full text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
             onClick={() => setIsEditing(true)}
           >
             <Pencil className="w-4 h-4" />
