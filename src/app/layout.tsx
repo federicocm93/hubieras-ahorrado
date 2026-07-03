@@ -19,6 +19,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Hubieras Ahorrado",
   description: "Rastrea tus gastos y administra tus finanzas personales",
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Hubieras Ahorrado",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
@@ -27,6 +35,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   // El teclado en pantalla achica el viewport en vez de tapar el contenido
   interactiveWidget: "resizes-content",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1120" },
+  ],
 };
 
 export default function RootLayout({
